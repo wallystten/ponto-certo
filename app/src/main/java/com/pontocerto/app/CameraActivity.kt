@@ -2,6 +2,7 @@ package com.pontocerto.app
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
@@ -20,9 +21,7 @@ class CameraActivity : AppCompatActivity() {
 
         btn.setOnClickListener {
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivityForResult(intent, REQUEST_IMAGE)
-            }
+            startActivityForResult(intent, REQUEST_IMAGE)
         }
     }
 
@@ -30,14 +29,26 @@ class CameraActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_IMAGE && resultCode == Activity.RESULT_OK) {
-            Toast.makeText(
-                this,
-                "Foto capturada com sucesso",
-                Toast.LENGTH_LONG
-            ).show()
+            val bitmap = data?.extras?.get("data") as Bitmap
 
-            // Aqui no futuro entra o reconhecimento facial
-            finish()
+            FaceUtils.detectarRosto(bitmap) { rostoDetectado ->
+                runOnUiThread {
+                    if (rostoDetectado) {
+                        Toast.makeText(
+                            this,
+                            "Rosto validado. Presença confirmada.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        finish()
+                    } else {
+                        Toast.makeText(
+                            this,
+                            "Nenhum rosto detectado. Tente novamente.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }
         }
     }
 }
