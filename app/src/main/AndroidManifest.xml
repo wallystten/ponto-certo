@@ -20,6 +20,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Tela de Login -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+
         <!-- Tela principal -->
         <activity
             android:name=".MainActivity"
