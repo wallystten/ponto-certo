@@ -4,24 +4,20 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="24dp"
-    android:background="@color/blue_primary">
+    android:padding="24dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ponto Certo"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:textColor="@color/white" />
+        android:text="Confirme sua presença"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <Button
-        android:id="@+id/btnMarcarPonto"
-        android:layout_marginTop="32dp"
+        android:id="@+id/btnAbrirCamera"
+        android:layout_marginTop="24dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Marcar Ponto"
-        android:backgroundTint="@color/green_accent"
-        android:textColor="@color/white" />
+        android:text="Abrir câmera" />
 
 </LinearLayout>

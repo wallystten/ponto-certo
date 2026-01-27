@@ -2,6 +2,7 @@ package com.pontocerto.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
@@ -15,29 +16,34 @@ class MainActivity : AppCompatActivity() {
 
         locationUtils = LocationUtils(this)
 
-        // Verifica permissões
         if (!PermissionUtils.hasAllPermissions(this)) {
             PermissionUtils.requestPermissions(this)
         } else {
             validarLocalizacao()
+        }
+
+        val btnMarcarPonto = findViewById<Button>(R.id.btnMarcarPonto)
+
+        btnMarcarPonto.setOnClickListener {
+            val dataHora = PontoUtils.registrarPonto()
+            Toast.makeText(
+                this,
+                "Ponto registrado em: $dataHora",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
     private fun validarLocalizacao() {
         locationUtils.verificarLocalizacao { permitido ->
             runOnUiThread {
-                if (permitido) {
-                    // Local válido → abre câmera
-                    startActivity(
-                        Intent(this, CameraActivity::class.java)
-                    )
-                } else {
-                    // Fora do local permitido
+                if (!permitido) {
                     Toast.makeText(
                         this,
-                        "Você está fora do local permitido para marcar o ponto.",
+                        "Você está fora do local permitido.",
                         Toast.LENGTH_LONG
                     ).show()
+                    finish()
                 }
             }
         }
@@ -59,8 +65,8 @@ class MainActivity : AppCompatActivity() {
                     "Permissões obrigatórias para usar o app.",
                     Toast.LENGTH_LONG
                 ).show()
+                finish()
             }
         }
     }
 }
-
