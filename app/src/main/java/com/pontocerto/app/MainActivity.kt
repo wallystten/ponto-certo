@@ -16,21 +16,34 @@ class MainActivity : AppCompatActivity() {
 
         locationUtils = LocationUtils(this)
 
+        // Verifica permissões
         if (!PermissionUtils.hasAllPermissions(this)) {
             PermissionUtils.requestPermissions(this)
         } else {
             validarLocalizacao()
         }
 
+        // Botão Marcar Ponto
         val btnMarcarPonto = findViewById<Button>(R.id.btnMarcarPonto)
-
         btnMarcarPonto.setOnClickListener {
+
             val dataHora = PontoUtils.registrarPonto()
+            val registro = "$dataHora - PONTO REGISTRADO"
+
+            // Salva no histórico local
+            StorageUtils.salvarPonto(this, registro)
+
             Toast.makeText(
                 this,
-                "Ponto registrado em: $dataHora",
+                "Ponto registrado com sucesso!",
                 Toast.LENGTH_LONG
             ).show()
+        }
+
+        // Botão Histórico (se existir no layout)
+        val btnHistorico = findViewById<Button?>(R.id.btnHistorico)
+        btnHistorico?.setOnClickListener {
+            startActivity(Intent(this, HistoricoActivity::class.java))
         }
     }
 
