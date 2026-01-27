@@ -17,9 +17,7 @@ class CameraActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
 
-        val btn = findViewById<Button>(R.id.btnAbrirCamera)
-
-        btn.setOnClickListener {
+        findViewById<Button>(R.id.btnAbrirCamera).setOnClickListener {
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             startActivityForResult(intent, REQUEST_IMAGE)
         }
@@ -31,21 +29,50 @@ class CameraActivity : AppCompatActivity() {
         if (requestCode == REQUEST_IMAGE && resultCode == Activity.RESULT_OK) {
             val bitmap = data?.extras?.get("data") as Bitmap
 
-            FaceUtils.detectarRosto(bitmap) { rostoDetectado ->
+            FaceUtils.gerarAssinaturaFacial(bitmap) { assinaturaAtual ->
                 runOnUiThread {
-                    if (rostoDetectado) {
+                    if (assinaturaAtual == null) {
                         Toast.makeText(
                             this,
-                            "Rosto validado. Presença confirmada.",
+                            "Rosto não detectado. Tente novamente.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@runOnUiThread
+                    }
+
+                    if (!BiometriaStorage.existeCadastro(this)) {
+                        // PRIMEIRO USO → cadastra rosto
+                        BiometriaStorage.salvarAssinatura(this, assinaturaAtual)
+                        Toast.makeText(
+                            this,
+                            "Rosto cadastrado com sucesso.",
                             Toast.LENGTH_LONG
                         ).show()
                         finish()
                     } else {
-                        Toast.makeText(
-                            this,
-                            "Nenhum rosto detectado. Tente novamente.",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        // COMPARAÇÃO
+                        val assinaturaSalva =
+                            BiometriaStorage.obterAssinatura(this)!!
+
+                        val valido = FaceUtils.compararAssinaturas(
+                            assinaturaAtual,
+                            assinaturaSalva
+                        )
+
+                        if (valido) {
+                            Toast.makeText(
+                                this,
+                                "Identidade confirmada.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            finish()
+                        } else {
+                            Toast.makeText(
+                                this,
+                                "Rosto não confere. Acesso negado.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
             }

@@ -36,6 +36,11 @@
             android:name=".CameraActivity"
             android:exported="false" />
 
+        <!-- Histórico de Pontos -->
+        <activity
+            android:name=".HistoricoActivity"
+            android:exported="false" />
+
         <!-- Tela principal -->
         <activity
             android:name=".MainActivity"

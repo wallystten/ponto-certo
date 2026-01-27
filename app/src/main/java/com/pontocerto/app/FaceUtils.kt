@@ -4,17 +4,16 @@ import android.graphics.Bitmap
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import java.security.MessageDigest
 
 object FaceUtils {
 
-    fun detectarRosto(
+    fun gerarAssinaturaFacial(
         bitmap: Bitmap,
-        callback: (Boolean) -> Unit
+        callback: (String?) -> Unit
     ) {
         val options = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
-            .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
             .build()
 
         val detector = FaceDetection.getClient(options)
@@ -22,10 +21,31 @@ object FaceUtils {
 
         detector.process(image)
             .addOnSuccessListener { faces ->
-                callback(faces.isNotEmpty())
+                if (faces.isNotEmpty()) {
+                    // Assinatura simples baseada na imagem (MVP)
+                    val assinatura = hashBitmap(bitmap)
+                    callback(assinatura)
+                } else {
+                    callback(null)
+                }
             }
             .addOnFailureListener {
-                callback(false)
+                callback(null)
             }
+    }
+
+    private fun hashBitmap(bitmap: Bitmap): String {
+        val bytes = ByteArray(bitmap.byteCount)
+        bitmap.copyPixelsToBuffer(java.nio.ByteBuffer.wrap(bytes))
+
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+
+        return digest.joinToString("") { "%02x".format(it) }
+    }
+
+    fun compararAssinaturas(a: String, b: String): Boolean {
+        // MVP: igualdade direta
+        return a == b
     }
 }
