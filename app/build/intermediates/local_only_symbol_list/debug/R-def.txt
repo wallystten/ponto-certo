@@ -1,0 +1,18 @@
+R_DEF: Internal format may change without notice
+local
+color blue_primary
+color green_accent
+color white
+id btnAbrirCamera
+id btnExportarCSV
+id btnHistorico
+id btnMarcarPonto
+id txtHistorico
+layout activity_camera
+layout activity_historico
+layout activity_login
+layout activity_main
+layout activity_splash
+mipmap ic_launcher
+mipmap ic_launcher_round
+style Theme.PontoCerto
