@@ -27,11 +27,11 @@ class MainActivity : AppCompatActivity() {
         val btnMarcarPonto = findViewById<Button>(R.id.btnMarcarPonto)
         btnMarcarPonto.setOnClickListener {
 
-            val dataHora = PontoUtils.registrarPonto()
+            val dataHora = PontoUtils.registrarPonto(this)
             val registro = "$dataHora - PONTO REGISTRADO"
 
             // Salva no histórico local
-            StorageUtils.salvarPonto(this, registro)
+            StorageUtils.salvarRegistroPonto(this, registro)
 
             Toast.makeText(
                 this,
