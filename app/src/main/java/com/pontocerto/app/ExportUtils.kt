@@ -34,14 +34,17 @@ object ExportUtils {
         val writer = FileWriter(arquivo)
 
         // Cabeçalho do CSV
-        writer.append("DataHora,Registro\n")
+        writer.append("DataHora\n")
 
         // Conteúdo
-        historico.split("\n").forEach { linha ->
-            // Formato esperado: "dd/MM/yyyy HH:mm:ss - PONTO REGISTRADO"
-            writer.append(linha.replace(" - ", ","))
-            writer.append("\n")
-        }
+        historico
+            .split("\n")
+            .forEach { linha: String ->
+                if (linha.isNotBlank()) {
+                    writer.append(linha)
+                    writer.append("\n")
+                }
+            }
 
         writer.flush()
         writer.close()
