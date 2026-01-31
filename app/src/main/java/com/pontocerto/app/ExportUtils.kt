@@ -20,9 +20,7 @@ object ExportUtils {
         }
 
         val pasta = File(
-            Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOCUMENTS
-            ),
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),
             "PontoCerto"
         )
 
@@ -33,13 +31,13 @@ object ExportUtils {
         val arquivo = File(pasta, "historico_ponto.csv")
         val writer = FileWriter(arquivo)
 
-        // Cabeçalho do CSV
-        writer.append("DataHora\n")
+        // Cabeçalho simples
+        writer.append("Registro\n")
 
-        // Conteúdo
+        // Cada linha já é um registro completo
         historico
             .split("\n")
-            .forEach { linha: String ->
+            .forEach { linha ->
                 if (linha.isNotBlank()) {
                     writer.append(linha)
                     writer.append("\n")
@@ -54,10 +52,9 @@ object ExportUtils {
 
     /**
      * Base para exportação em PDF.
-     * A implementação completa será adicionada no build
-     * (GitHub Actions + biblioteca PDF).
+     * A implementação completa será adicionada futuramente.
      */
     fun exportarPDF(context: Context) {
-        // Implementação completa entra depois
+        // Implementação futura
     }
 }

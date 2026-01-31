@@ -5,20 +5,27 @@ import android.content.Context
 object StorageUtils {
 
     private const val PREFS_NAME = "ponto_certo_prefs"
-    private const val KEY_USUARIO = "usuario_logado"
+    private const val KEY_HISTORICO = "historico_pontos"
 
-    fun salvarUsuarioLogado(context: Context, cpf: String) {
+    fun salvarPonto(context: Context, registro: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_USUARIO, cpf).apply()
+        val historicoAtual = prefs.getString(KEY_HISTORICO, "") ?: ""
+        val novoHistorico = if (historicoAtual.isBlank()) {
+            registro
+        } else {
+            "$historicoAtual\n$registro"
+        }
+
+        prefs.edit().putString(KEY_HISTORICO, novoHistorico).apply()
     }
 
-    fun obterUsuarioLogado(context: Context): String? {
+    fun obterHistorico(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_USUARIO, null)
+        return prefs.getString(KEY_HISTORICO, "") ?: ""
     }
 
-    fun limparUsuario(context: Context) {
+    fun limparHistorico(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().clear().apply()
+        prefs.edit().remove(KEY_HISTORICO).apply()
     }
 }

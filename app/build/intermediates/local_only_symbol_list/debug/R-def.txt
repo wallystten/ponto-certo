@@ -4,9 +4,12 @@ color blue_primary
 color green_accent
 color white
 id btnAbrirCamera
+id btnEntrar
 id btnExportarCSV
 id btnHistorico
 id btnMarcarPonto
+id edtCpf
+id edtSenha
 id txtHistorico
 layout activity_camera
 layout activity_historico
