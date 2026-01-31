@@ -1,62 +1,62 @@
 [
     {
-        "merged": "com.pontocerto.app-merged_res-22:/mipmap-mdpi_ic_launcher.png.flat",
-        "source": "com.pontocerto.app-main-24:/mipmap-mdpi/ic_launcher.png"
+        "merged": "com.pontocerto.app-merged_res-33:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.pontocerto.app-main-35:/mipmap-hdpi/ic_launcher.png"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/mipmap-hdpi_ic_launcher.png.flat",
-        "source": "com.pontocerto.app-main-24:/mipmap-hdpi/ic_launcher.png"
+        "merged": "com.pontocerto.app-merged_res-33:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "com.pontocerto.app-main-35:/mipmap-hdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/mipmap-xhdpi_ic_launcher.png.flat",
-        "source": "com.pontocerto.app-main-24:/mipmap-xhdpi/ic_launcher.png"
+        "merged": "com.pontocerto.app-merged_res-33:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.pontocerto.app-main-35:/mipmap-mdpi/ic_launcher.png"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/layout_activity_main.xml.flat",
-        "source": "com.pontocerto.app-main-24:/layout/activity_main.xml"
+        "merged": "com.pontocerto.app-merged_res-33:/layout_activity_historico.xml.flat",
+        "source": "com.pontocerto.app-main-35:/layout/activity_historico.xml"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/mipmap-xhdpi_ic_launcher_round.png.flat",
-        "source": "com.pontocerto.app-main-24:/mipmap-xhdpi/ic_launcher_round.png"
+        "merged": "com.pontocerto.app-merged_res-33:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.pontocerto.app-main-35:/mipmap-xxxhdpi/ic_launcher.png"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/mipmap-xxhdpi_ic_launcher_round.png.flat",
-        "source": "com.pontocerto.app-main-24:/mipmap-xxhdpi/ic_launcher_round.png"
+        "merged": "com.pontocerto.app-merged_res-33:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.pontocerto.app-main-35:/mipmap-xhdpi/ic_launcher.png"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/layout_activity_login.xml.flat",
-        "source": "com.pontocerto.app-main-24:/layout/activity_login.xml"
+        "merged": "com.pontocerto.app-merged_res-33:/layout_activity_login.xml.flat",
+        "source": "com.pontocerto.app-main-35:/layout/activity_login.xml"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/mipmap-hdpi_ic_launcher_round.png.flat",
-        "source": "com.pontocerto.app-main-24:/mipmap-hdpi/ic_launcher_round.png"
+        "merged": "com.pontocerto.app-merged_res-33:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "com.pontocerto.app-main-35:/mipmap-xxxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/mipmap-xxhdpi_ic_launcher.png.flat",
-        "source": "com.pontocerto.app-main-24:/mipmap-xxhdpi/ic_launcher.png"
+        "merged": "com.pontocerto.app-merged_res-33:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "com.pontocerto.app-main-35:/mipmap-mdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/mipmap-xxxhdpi_ic_launcher.png.flat",
-        "source": "com.pontocerto.app-main-24:/mipmap-xxxhdpi/ic_launcher.png"
+        "merged": "com.pontocerto.app-merged_res-33:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.pontocerto.app-main-35:/mipmap-xxhdpi/ic_launcher.png"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
-        "source": "com.pontocerto.app-main-24:/mipmap-xxxhdpi/ic_launcher_round.png"
+        "merged": "com.pontocerto.app-merged_res-33:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "com.pontocerto.app-main-35:/mipmap-xxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/layout_activity_splash.xml.flat",
-        "source": "com.pontocerto.app-main-24:/layout/activity_splash.xml"
+        "merged": "com.pontocerto.app-merged_res-33:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "com.pontocerto.app-main-35:/mipmap-xhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/layout_activity_camera.xml.flat",
-        "source": "com.pontocerto.app-main-24:/layout/activity_camera.xml"
+        "merged": "com.pontocerto.app-merged_res-33:/layout_activity_main.xml.flat",
+        "source": "com.pontocerto.app-main-35:/layout/activity_main.xml"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/mipmap-mdpi_ic_launcher_round.png.flat",
-        "source": "com.pontocerto.app-main-24:/mipmap-mdpi/ic_launcher_round.png"
+        "merged": "com.pontocerto.app-merged_res-33:/layout_activity_splash.xml.flat",
+        "source": "com.pontocerto.app-main-35:/layout/activity_splash.xml"
     },
     {
-        "merged": "com.pontocerto.app-merged_res-22:/layout_activity_historico.xml.flat",
-        "source": "com.pontocerto.app-main-24:/layout/activity_historico.xml"
+        "merged": "com.pontocerto.app-merged_res-33:/layout_activity_camera.xml.flat",
+        "source": "com.pontocerto.app-main-35:/layout/activity_camera.xml"
     }
 ]

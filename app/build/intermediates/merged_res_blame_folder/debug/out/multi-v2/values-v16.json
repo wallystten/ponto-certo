@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.pontocerto.app-mergeDebugResources-20:/values-v16/values-v16.xml",
+            "outputFile": "com.pontocerto.app-mergeDebugResources-31:/values-v16/values-v16.xml",
             "map": [
                 {
-                    "source": "/data/data/com.termux/files/home/.gradle/caches/9.2.0/transforms/3b423dd3ef606c614aca0bece812e3e2/transformed/core-1.12.0/res/values-v16/values-v16.xml",
+                    "source": "/data/data/com.termux/files/home/.gradle/caches/transforms-3/217cd4443c329c3de6d6b6409afab4f6/transformed/core-1.12.0/res/values-v16/values-v16.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
@@ -14,7 +14,7 @@
                     }
                 },
                 {
-                    "source": "/data/data/com.termux/files/home/.gradle/caches/9.2.0/transforms/a9f4980fd844b0ae7d5174d3e4376c90/transformed/appcompat-1.6.1/res/values-v16/values-v16.xml",
+                    "source": "/data/data/com.termux/files/home/.gradle/caches/transforms-3/a41e6a68a8051e59a1bea027c058f81a/transformed/appcompat-1.6.1/res/values-v16/values-v16.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
