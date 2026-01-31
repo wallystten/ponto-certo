@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
 
         locationUtils = LocationUtils(this)
 
-        // Verifica permissões
+        // Verifica permissões necessárias
         if (!PermissionUtils.hasAllPermissions(this)) {
             PermissionUtils.requestPermissions(this)
         } else {
@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
 
-        // Botão Histórico (se existir no layout)
+        // Botão Histórico (opcional no layout)
         val btnHistorico = findViewById<Button?>(R.id.btnHistorico)
         btnHistorico?.setOnClickListener {
             startActivity(Intent(this, HistoricoActivity::class.java))
