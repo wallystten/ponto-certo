@@ -12,11 +12,21 @@ class HistoricoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_historico)
 
-        val txt = findViewById<TextView>(R.id.txtHistorico)
-        txt.text = StorageUtils.obterHistorico(this)
+        val txtHistorico = findViewById<TextView>(R.id.txtHistorico)
+        val historico = StorageUtils.obterHistorico(this)
 
-        findViewById<Button>(R.id.btnExportarCSV).setOnClickListener {
+        // Exibe histórico ou mensagem padrão
+        txtHistorico.text = if (historico.isNotBlank()) {
+            historico
+        } else {
+            "Nenhum ponto registrado até o momento."
+        }
+
+        val btnExportarCSV = findViewById<Button>(R.id.btnExportarCSV)
+        btnExportarCSV.setOnClickListener {
+
             val arquivo = ExportUtils.exportarCSV(this)
+
             if (arquivo != null) {
                 Toast.makeText(
                     this,
