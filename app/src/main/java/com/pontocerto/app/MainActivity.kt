@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
+    // Mantemos o LocationUtils, mas não usamos agora
     private lateinit var locationUtils: LocationUtils
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         if (!PermissionUtils.hasAllPermissions(this)) {
             PermissionUtils.requestPermissions(this)
         } else {
-            validarLocalizacao()
+            // validarLocalizacao()  // 🔒 DESATIVADO TEMPORARIAMENTE PARA TESTES
         }
 
         // Botão Marcar Ponto
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // 🔒 Mantido para uso futuro (produção)
     private fun validarLocalizacao() {
         locationUtils.verificarLocalizacao { permitido ->
             runOnUiThread {
@@ -72,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == PermissionUtils.REQUEST_CODE) {
             if (PermissionUtils.hasAllPermissions(this)) {
-                validarLocalizacao()
+                // validarLocalizacao()  // 🔒 DESATIVADO TEMPORARIAMENTE PARA TESTES
             } else {
                 Toast.makeText(
                     this,
