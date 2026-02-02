@@ -12,7 +12,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+<<<<<<< HEAD
         // Botão Marcar Ponto
+=======
+>>>>>>> 3496ed8 (build estável sem validação de localização)
         val btnMarcarPonto = findViewById<Button>(R.id.btnMarcarPonto)
         btnMarcarPonto.setOnClickListener {
 
@@ -28,10 +31,14 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
 
+<<<<<<< HEAD
         // Botão Histórico
+=======
+>>>>>>> 3496ed8 (build estável sem validação de localização)
         val btnHistorico = findViewById<Button?>(R.id.btnHistorico)
         btnHistorico?.setOnClickListener {
             startActivity(Intent(this, HistoricoActivity::class.java))
         }
     }
 }
+
