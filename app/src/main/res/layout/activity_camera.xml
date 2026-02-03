@@ -11,11 +11,11 @@
         android:layout_height="wrap_content"
         android:text="Confirme sua presença"
         android:textSize="20sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
 
     <Button
         android:id="@+id/btnAbrirCamera"
-        android:layout_marginTop="24dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Abrir câmera" />
