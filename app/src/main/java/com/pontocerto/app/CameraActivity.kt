@@ -27,8 +27,8 @@ class CameraActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_IMAGE && resultCode == Activity.RESULT_OK) {
-            val bitmap = data?.extras?.get("data") as? Bitmap
 
+            val bitmap = data?.extras?.get("data") as? Bitmap
             if (bitmap == null) {
                 Toast.makeText(this, "Erro ao capturar imagem.", Toast.LENGTH_LONG).show()
                 setResult(Activity.RESULT_CANCELED)
@@ -61,12 +61,13 @@ class CameraActivity : AppCompatActivity() {
                             Toast.LENGTH_LONG
                         ).show()
 
-                        setResult(Activity.RESULT_OK)
+                        val resultIntent = Intent()
+                        resultIntent.putExtra("FACE_OK", true)
+                        setResult(Activity.RESULT_OK, resultIntent)
                         finish()
                     } else {
                         // COMPARAÇÃO
-                        val assinaturaSalva =
-                            BiometriaStorage.obterAssinatura(this)
+                        val assinaturaSalva = BiometriaStorage.obterAssinatura(this)
 
                         if (assinaturaSalva == null) {
                             Toast.makeText(
@@ -92,7 +93,9 @@ class CameraActivity : AppCompatActivity() {
                                 Toast.LENGTH_LONG
                             ).show()
 
-                            setResult(Activity.RESULT_OK)
+                            val resultIntent = Intent()
+                            resultIntent.putExtra("FACE_OK", true)
+                            setResult(Activity.RESULT_OK, resultIntent)
                             finish()
                         } else {
                             Toast.makeText(
