@@ -1,4 +1,4 @@
-kpackage com.pontocerto.app
+package com.pontocerto.app
 
 import android.content.Intent
 import android.os.Bundle
