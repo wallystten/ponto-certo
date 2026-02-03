@@ -37,9 +37,12 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_FACE) {
-            if (resultCode == Activity.RESULT_OK) {
 
-                // 🔐 Validação facial OK → registra ponto
+            val faceOk = data?.getBooleanExtra("FACE_OK", false) ?: false
+
+            if (resultCode == Activity.RESULT_OK && faceOk) {
+
+                // ✅ Validação facial confirmada
                 val dataHora = PontoUtils.registrarPonto()
                 val registro = "$dataHora - PONTO REGISTRADO"
 
