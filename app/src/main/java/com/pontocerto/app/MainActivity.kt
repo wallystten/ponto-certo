@@ -38,15 +38,23 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == REQUEST_FACE) {
             if (resultCode == Activity.RESULT_OK) {
+
+                // 🔐 Validação facial OK → registra ponto
+                val dataHora = PontoUtils.registrarPonto()
+                val registro = "$dataHora - PONTO REGISTRADO"
+
+                StorageUtils.salvarPonto(this, registro)
+
                 Toast.makeText(
                     this,
-                    "Validação facial confirmada.",
+                    "Ponto registrado com sucesso!",
                     Toast.LENGTH_LONG
                 ).show()
+
             } else {
                 Toast.makeText(
                     this,
-                    "Falha na validação facial.",
+                    "Falha na validação facial. Ponto não registrado.",
                     Toast.LENGTH_LONG
                 ).show()
             }
