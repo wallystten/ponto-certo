@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Declara uso obrigatório da câmera -->
+    <!-- Declara uso da câmera (obrigatória para biometria) -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -29,6 +29,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Empresa (PASSO 6) -->
+        <activity
+            android:name=".EmpresaActivity"
+            android:exported="false" />
 
         <!-- Câmera / Biometria facial -->
         <activity
