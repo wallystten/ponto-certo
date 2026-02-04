@@ -2,10 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pontocerto.app">
 
-    <!-- Permissões necessárias -->
+    <!-- Permissões -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Declara uso obrigatório da câmera -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -15,6 +20,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PontoCerto">
 
+        <!-- Tela inicial -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -24,10 +30,12 @@
             </intent-filter>
         </activity>
 
+        <!-- Câmera / Biometria facial -->
         <activity
             android:name=".CameraActivity"
             android:exported="false" />
 
+        <!-- Histórico -->
         <activity
             android:name=".HistoricoActivity"
             android:exported="false" />
