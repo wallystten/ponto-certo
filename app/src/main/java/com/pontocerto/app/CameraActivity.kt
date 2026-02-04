@@ -108,3 +108,4 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 }
+  
