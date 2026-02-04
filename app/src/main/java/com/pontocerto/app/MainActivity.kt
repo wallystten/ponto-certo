@@ -19,9 +19,17 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnMarcarPonto).setOnClickListener {
 
+            // 🏢 PASSO 5 — verifica empresa ANTES de tudo
+            if (!EmpresaStorage.existeEmpresa(this)) {
+                startActivity(
+                    Intent(this, EmpresaActivity::class.java)
+                )
+                return@setOnClickListener
+            }
+
+            // 🔎 Decide o modo facial
             val intent = Intent(this, CameraActivity::class.java)
 
-            // 🔎 Decide o modo
             val modo = if (BiometriaStorage.existeCadastro(this)) {
                 "VALIDACAO"
             } else {
