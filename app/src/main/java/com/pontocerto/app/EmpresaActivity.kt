@@ -28,6 +28,7 @@ class EmpresaActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // 💾 Salva empresa localmente
             EmpresaStorage.salvarEmpresa(this, codigo)
 
             Toast.makeText(
@@ -36,9 +37,9 @@ class EmpresaActivity : AppCompatActivity() {
                 Toast.LENGTH_LONG
             ).show()
 
+            // 🔁 Retorna sucesso para quem chamou
             setResult(Activity.RESULT_OK)
             finish()
         }
     }
 }
- 
