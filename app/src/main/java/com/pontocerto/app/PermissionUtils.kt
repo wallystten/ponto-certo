@@ -10,12 +10,15 @@ object PermissionUtils {
 
     const val REQUEST_CODE = 1001
 
-    private val REQUIRED_PERMISSIONS = arrayOf(
+    val REQUIRED_PERMISSIONS = arrayOf(
         Manifest.permission.CAMERA,
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
     )
 
+    /**
+     * Verifica se TODAS as permissões obrigatórias foram concedidas
+     */
     fun hasAllPermissions(activity: Activity): Boolean {
         return REQUIRED_PERMISSIONS.all { permission ->
             ContextCompat.checkSelfPermission(
@@ -25,6 +28,19 @@ object PermissionUtils {
         }
     }
 
+    /**
+     * Verifica uma permissão específica
+     */
+    fun hasPermission(activity: Activity, permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(
+            activity,
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    /**
+     * Solicita todas as permissões necessárias
+     */
     fun requestPermissions(activity: Activity) {
         ActivityCompat.requestPermissions(
             activity,
@@ -33,4 +49,3 @@ object PermissionUtils {
         )
     }
 }
-
