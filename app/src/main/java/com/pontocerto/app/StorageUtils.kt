@@ -6,15 +6,11 @@ object StorageUtils {
 
     private const val PREFS_NAME = "ponto_certo_prefs"
 
-    // Histórico de pontos
-    private const val KEY_HISTORICO = "historico_pontos"
-
-    // Usuário logado
-    private const val KEY_USUARIO_LOGADO = "usuario_logado"
-
     /* ===============================
        HISTÓRICO DE PONTO
        =============================== */
+
+    private const val KEY_HISTORICO = "historico_pontos"
 
     fun salvarPonto(context: Context, registro: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -42,8 +38,10 @@ object StorageUtils {
     }
 
     /* ===============================
-       LOGIN / USUÁRIO
+       USUÁRIO LOGADO
        =============================== */
+
+    private const val KEY_USUARIO_LOGADO = "usuario_logado"
 
     fun salvarUsuarioLogado(context: Context, cpf: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -61,5 +59,31 @@ object StorageUtils {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().remove(KEY_USUARIO_LOGADO).apply()
     }
-}
 
+    /* ===============================
+       EMPRESA (PASSO 5 / 6)
+       =============================== */
+
+    private const val KEY_EMPRESA = "empresa_codigo"
+
+    fun salvarEmpresa(context: Context, codigoEmpresa: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit()
+            .putString(KEY_EMPRESA, codigoEmpresa)
+            .apply()
+    }
+
+    fun obterEmpresa(context: Context): String? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_EMPRESA, null)
+    }
+
+    fun existeEmpresa(context: Context): Boolean {
+        return obterEmpresa(context) != null
+    }
+
+    fun limparEmpresa(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().remove(KEY_EMPRESA).apply()
+    }
+}
