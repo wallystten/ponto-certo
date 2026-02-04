@@ -7,23 +7,25 @@
     android:padding="24dp">
 
     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="Código da Empresa"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginBottom="12dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_marginBottom="12dp" />
 
     <EditText
         android:id="@+id/edtCodigoEmpresa"
-        android:hint="Ex: EMP-4582"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:hint="Ex: EMP-4582"
+        android:inputType="textCapCharacters"
+        android:maxLines="1" />
 
     <Button
         android:id="@+id/btnSalvarEmpresa"
-        android:text="Confirmar"
-        android:layout_marginTop="16dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="Confirmar"
+        android:layout_marginTop="16dp" />
 </LinearLayout>
