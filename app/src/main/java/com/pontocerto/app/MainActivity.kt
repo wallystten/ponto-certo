@@ -19,42 +19,21 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnMarcarPonto).setOnClickListener {
 
-            if (!PermissionUtils.hasAllPermissions(this)) {
-                PermissionUtils.requestPermissions(this)
+            val intent = Intent(this, CameraActivity::class.java)
+
+            // 🔎 Decide o modo
+            val modo = if (BiometriaStorage.existeCadastro(this)) {
+                "VALIDACAO"
             } else {
-                abrirCamera()
+                "CADASTRO"
             }
+
+            intent.putExtra("MODO_FACE", modo)
+            startActivityForResult(intent, REQUEST_FACE)
         }
 
         findViewById<Button?>(R.id.btnHistorico)?.setOnClickListener {
             startActivity(Intent(this, HistoricoActivity::class.java))
-        }
-    }
-
-    private fun abrirCamera() {
-        startActivityForResult(
-            Intent(this, CameraActivity::class.java),
-            REQUEST_FACE
-        )
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == PermissionUtils.REQUEST_CODE &&
-            PermissionUtils.hasAllPermissions(this)
-        ) {
-            abrirCamera()
-        } else {
-            Toast.makeText(
-                this,
-                "Permissões obrigatórias para marcar ponto.",
-                Toast.LENGTH_LONG
-            ).show()
         }
     }
 
@@ -66,23 +45,33 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_FACE) {
-            if (resultCode == Activity.RESULT_OK) {
 
-                val dataHora = PontoUtils.registrarPonto()
-                val registro = "$dataHora - PONTO REGISTRADO"
+            val sucesso = data?.getBooleanExtra("FACE_OK", false) ?: false
+            val modo = data?.getStringExtra("MODO_FACE") ?: ""
 
-                StorageUtils.salvarPonto(this, registro)
+            if (resultCode == Activity.RESULT_OK && sucesso) {
 
-                Toast.makeText(
-                    this,
-                    "Ponto registrado com sucesso!",
-                    Toast.LENGTH_LONG
-                ).show()
+                if (modo == "VALIDACAO") {
+                    val dataHora = PontoUtils.registrarPonto()
+                    StorageUtils.salvarPonto(this, "$dataHora - PONTO REGISTRADO")
+
+                    Toast.makeText(
+                        this,
+                        "Ponto registrado com sucesso!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Cadastro facial concluído. Agora você pode registrar o ponto.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
 
             } else {
                 Toast.makeText(
                     this,
-                    "Falha na validação facial. Ponto não registrado.",
+                    "Falha na validação facial.",
                     Toast.LENGTH_LONG
                 ).show()
             }
