@@ -6,14 +6,26 @@
     android:gravity="center"
     android:padding="24dp">
 
+    <!-- Título -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Confirme sua presença"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="12dp" />
 
+    <!-- Instrução dinâmica (CADASTRO / VALIDAÇÃO) -->
+    <TextView
+        android:id="@+id/txtInstrucao"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Centralize o rosto e mantenha boa iluminação"
+        android:textSize="14sp"
+        android:textColor="#666666"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Botão câmera -->
     <Button
         android:id="@+id/btnAbrirCamera"
         android:layout_width="match_parent"
