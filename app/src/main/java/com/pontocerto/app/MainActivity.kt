@@ -11,6 +11,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_FACE = 100
+        private const val REQUEST_EMPRESA = 200
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,30 +20,34 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnMarcarPonto).setOnClickListener {
 
-            // 🏢 PASSO 5 — verifica empresa ANTES de tudo
+            // 🏢 PASSO 5 — empresa vem antes de tudo
             if (!EmpresaStorage.existeEmpresa(this)) {
-                startActivity(
-                    Intent(this, EmpresaActivity::class.java)
+                startActivityForResult(
+                    Intent(this, EmpresaActivity::class.java),
+                    REQUEST_EMPRESA
                 )
                 return@setOnClickListener
             }
 
-            // 🔎 Decide o modo facial
-            val intent = Intent(this, CameraActivity::class.java)
-
-            val modo = if (BiometriaStorage.existeCadastro(this)) {
-                "VALIDACAO"
-            } else {
-                "CADASTRO"
-            }
-
-            intent.putExtra("MODO_FACE", modo)
-            startActivityForResult(intent, REQUEST_FACE)
+            iniciarFluxoBiometria()
         }
 
         findViewById<Button?>(R.id.btnHistorico)?.setOnClickListener {
             startActivity(Intent(this, HistoricoActivity::class.java))
         }
+    }
+
+    private fun iniciarFluxoBiometria() {
+        val intent = Intent(this, CameraActivity::class.java)
+
+        val modo = if (BiometriaStorage.existeCadastro(this)) {
+            "VALIDACAO"
+        } else {
+            "CADASTRO"
+        }
+
+        intent.putExtra("MODO_FACE", modo)
+        startActivityForResult(intent, REQUEST_FACE)
     }
 
     override fun onActivityResult(
@@ -52,36 +57,55 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == REQUEST_FACE) {
+        when (requestCode) {
 
-            val sucesso = data?.getBooleanExtra("FACE_OK", false) ?: false
-            val modo = data?.getStringExtra("MODO_FACE") ?: ""
-
-            if (resultCode == Activity.RESULT_OK && sucesso) {
-
-                if (modo == "VALIDACAO") {
-                    val dataHora = PontoUtils.registrarPonto()
-                    StorageUtils.salvarPonto(this, "$dataHora - PONTO REGISTRADO")
-
-                    Toast.makeText(
-                        this,
-                        "Ponto registrado com sucesso!",
-                        Toast.LENGTH_LONG
-                    ).show()
+            // 🏢 Retorno da empresa
+            REQUEST_EMPRESA -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    iniciarFluxoBiometria()
                 } else {
                     Toast.makeText(
                         this,
-                        "Cadastro facial concluído. Agora você pode registrar o ponto.",
+                        "É necessário informar a empresa para continuar.",
                         Toast.LENGTH_LONG
                     ).show()
                 }
+            }
 
-            } else {
-                Toast.makeText(
-                    this,
-                    "Falha na validação facial.",
-                    Toast.LENGTH_LONG
-                ).show()
+            // 📷 Retorno da biometria
+            REQUEST_FACE -> {
+                val sucesso = data?.getBooleanExtra("FACE_OK", false) ?: false
+                val modo = data?.getStringExtra("MODO_FACE") ?: ""
+
+                if (resultCode == Activity.RESULT_OK && sucesso) {
+
+                    if (modo == "VALIDACAO") {
+                        val dataHora = PontoUtils.registrarPonto()
+                        StorageUtils.salvarPonto(
+                            this,
+                            "$dataHora - PONTO REGISTRADO"
+                        )
+
+                        Toast.makeText(
+                            this,
+                            "Ponto registrado com sucesso!",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            this,
+                            "Cadastro facial concluído. Agora você pode registrar o ponto.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Falha na validação facial.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
