@@ -10,7 +10,7 @@ object PermissionUtils {
 
     const val REQUEST_CODE = 1001
 
-    private val REQUIRED_PERMISSIONS = arrayOf(
+    val REQUIRED_PERMISSIONS = arrayOf(
         Manifest.permission.CAMERA,
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
@@ -40,11 +40,10 @@ object PermissionUtils {
     }
 
     /**
-     * Deve ser chamado no onRequestPermissionsResult
+     * Verifica se o resultado do requestPermissions foi positivo
      */
     fun permissoesConcedidas(grantResults: IntArray): Boolean {
-        return grantResults.isNotEmpty() && grantResults.all {
-            it == PackageManager.PERMISSION_GRANTED
-        }
+        if (grantResults.isEmpty()) return false
+        return grantResults.all { it == PackageManager.PERMISSION_GRANTED }
     }
 }
