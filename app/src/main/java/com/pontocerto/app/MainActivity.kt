@@ -20,7 +20,13 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnMarcarPonto).setOnClickListener {
 
-            // 🏢 PASSO 5 — empresa vem antes de tudo
+            // 🔐 PASSO 1 — permissões SEMPRE primeiro
+            if (!PermissionUtils.temPermissoes(this)) {
+                PermissionUtils.pedirPermissoes(this)
+                return@setOnClickListener
+            }
+
+            // 🏢 PASSO 2 — empresa obrigatória
             if (!EmpresaStorage.existeEmpresa(this)) {
                 startActivityForResult(
                     Intent(this, EmpresaActivity::class.java),
@@ -29,6 +35,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // 📷 PASSO 3 — biometria
             iniciarFluxoBiometria()
         }
 
@@ -50,6 +57,36 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(intent, REQUEST_FACE)
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == PermissionUtils.REQUEST_CODE) {
+            if (PermissionUtils.permissoesConcedidas(grantResults)) {
+
+                // após conceder permissão, volta o fluxo normal
+                if (!EmpresaStorage.existeEmpresa(this)) {
+                    startActivityForResult(
+                        Intent(this, EmpresaActivity::class.java),
+                        REQUEST_EMPRESA
+                    )
+                } else {
+                    iniciarFluxoBiometria()
+                }
+
+            } else {
+                Toast.makeText(
+                    this,
+                    "Permissões obrigatórias para usar o aplicativo.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
@@ -59,7 +96,7 @@ class MainActivity : AppCompatActivity() {
 
         when (requestCode) {
 
-            // 🏢 Retorno da empresa
+            // 🏢 retorno da empresa
             REQUEST_EMPRESA -> {
                 if (resultCode == Activity.RESULT_OK) {
                     iniciarFluxoBiometria()
@@ -72,7 +109,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // 📷 Retorno da biometria
+            // 📷 retorno da biometria
             REQUEST_FACE -> {
                 val sucesso = data?.getBooleanExtra("FACE_OK", false) ?: false
                 val modo = data?.getStringExtra("MODO_FACE") ?: ""
