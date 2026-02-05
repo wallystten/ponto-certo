@@ -20,13 +20,13 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnMarcarPonto).setOnClickListener {
 
-            // 1️⃣ Permissões primeiro
-            if (!PermissionUtils.hasAllPermissions(this)) {
-                PermissionUtils.requestPermissions(this)
+            // 🔐 PASSO 1 — permissões
+            if (!PermissionUtils.temPermissoes(this)) {
+                PermissionUtils.pedirPermissoes(this)
                 return@setOnClickListener
             }
 
-            // 2️⃣ Empresa obrigatória
+            // 🏢 PASSO 2 — empresa obrigatória
             if (!EmpresaStorage.existeEmpresa(this)) {
                 startActivityForResult(
                     Intent(this, EmpresaActivity::class.java),
@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // 3️⃣ Biometria (cadastro ou validação)
+            // 📷 PASSO 3 — biometria facial
             iniciarFluxoBiometria()
         }
 
@@ -47,7 +47,6 @@ class MainActivity : AppCompatActivity() {
     private fun iniciarFluxoBiometria() {
         val intent = Intent(this, CameraActivity::class.java)
 
-        // 🔐 REGRA DEFINITIVA
         val modo = if (BiometriaStorage.existeCadastro(this)) {
             "VALIDACAO"
         } else {
@@ -66,10 +65,8 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (requestCode == PermissionUtils.REQUEST_CODE) {
+            if (PermissionUtils.permissoesConcedidas(grantResults)) {
 
-            if (PermissionUtils.hasAllPermissions(this)) {
-
-                // volta para o fluxo normal
                 if (!EmpresaStorage.existeEmpresa(this)) {
                     startActivityForResult(
                         Intent(this, EmpresaActivity::class.java),
@@ -98,7 +95,6 @@ class MainActivity : AppCompatActivity() {
 
         when (requestCode) {
 
-            // 🏢 retorno da empresa
             REQUEST_EMPRESA -> {
                 if (resultCode == Activity.RESULT_OK) {
                     iniciarFluxoBiometria()
@@ -111,7 +107,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // 📷 retorno da biometria
             REQUEST_FACE -> {
                 val sucesso = data?.getBooleanExtra("FACE_OK", false) ?: false
                 val modo = data?.getStringExtra("MODO_FACE") ?: ""
@@ -119,7 +114,6 @@ class MainActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK && sucesso) {
 
                     if (modo == "VALIDACAO") {
-
                         val dataHora = PontoUtils.registrarPonto()
                         StorageUtils.salvarPonto(
                             this,
@@ -131,12 +125,10 @@ class MainActivity : AppCompatActivity() {
                             "Ponto registrado com sucesso!",
                             Toast.LENGTH_LONG
                         ).show()
-
                     } else {
-                        // 👤 cadastro concluído
                         Toast.makeText(
                             this,
-                            "Cadastro facial concluído. Agora valide novamente para registrar o ponto.",
+                            "Cadastro facial concluído. Agora você pode registrar o ponto.",
                             Toast.LENGTH_LONG
                         ).show()
                     }
