@@ -47,3 +47,4 @@ object PermissionUtils {
         return grantResults.all { it == PackageManager.PERMISSION_GRANTED }
     }
 }
+  
