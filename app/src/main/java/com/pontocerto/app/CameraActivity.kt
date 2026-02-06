@@ -76,7 +76,6 @@ class CameraActivity : AppCompatActivity() {
                     "Permissão da câmera é obrigatória.",
                     Toast.LENGTH_LONG
                 ).show()
-
                 setResult(Activity.RESULT_CANCELED)
                 finish()
             }
@@ -118,14 +117,13 @@ class CameraActivity : AppCompatActivity() {
                         "Rosto não detectado. Ajuste a posição e tente novamente.",
                         Toast.LENGTH_LONG
                     ).show()
-
                     setResult(Activity.RESULT_CANCELED)
                     finish()
                     return@runOnUiThread
                 }
 
+                // ✅ MVP: rosto detectado = válido
                 if (modoFace == "CADASTRO") {
-
                     BiometriaStorage.salvarAssinatura(this, assinaturaAtual)
 
                     Toast.makeText(
@@ -141,40 +139,11 @@ class CameraActivity : AppCompatActivity() {
                     finish()
 
                 } else {
-
-                    val assinaturaSalva = BiometriaStorage.obterAssinatura(this)
-
-                    if (assinaturaSalva == null) {
-                        Toast.makeText(
-                            this,
-                            "Biometria não encontrada.",
-                            Toast.LENGTH_LONG
-                        ).show()
-
-                        setResult(Activity.RESULT_CANCELED)
-                        finish()
-                        return@runOnUiThread
-                    }
-
-                    val valido = true
-                    )
-
-                    if (valido) {
-                        val result = Intent()
-                        result.putExtra("FACE_OK", true)
-                        result.putExtra("MODO_FACE", "VALIDACAO")
-                        setResult(Activity.RESULT_OK, result)
-                        finish()
-                    } else {
-                        Toast.makeText(
-                            this,
-                            "Rosto não confere.",
-                            Toast.LENGTH_LONG
-                        ).show()
-
-                        setResult(Activity.RESULT_CANCELED)
-                        finish()
-                    }
+                    val result = Intent()
+                    result.putExtra("FACE_OK", true)
+                    result.putExtra("MODO_FACE", "VALIDACAO")
+                    setResult(Activity.RESULT_OK, result)
+                    finish()
                 }
             }
         }
