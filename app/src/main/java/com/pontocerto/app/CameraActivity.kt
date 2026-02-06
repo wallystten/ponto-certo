@@ -48,7 +48,7 @@ class CameraActivity : AppCompatActivity() {
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            abrirCamera()
+            abrirCameraFrontal()
         } else {
             ActivityCompat.requestPermissions(
                 this,
@@ -69,7 +69,7 @@ class CameraActivity : AppCompatActivity() {
             if (grantResults.isNotEmpty() &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED
             ) {
-                abrirCamera()
+                abrirCameraFrontal()
             } else {
                 Toast.makeText(
                     this,
@@ -83,11 +83,17 @@ class CameraActivity : AppCompatActivity() {
     }
 
     /* ===============================
-       CÂMERA
+       CÂMERA FRONTAL (FORÇADA)
        =============================== */
 
-    private fun abrirCamera() {
+    private fun abrirCameraFrontal() {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+        // 🔥 FORÇA câmera frontal
+        intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
+        intent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
+        intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true)
+
         startActivityForResult(intent, REQUEST_IMAGE)
     }
 
@@ -122,8 +128,9 @@ class CameraActivity : AppCompatActivity() {
                     return@runOnUiThread
                 }
 
-                // ✅ MVP: rosto detectado = válido
+                // ✅ MVP: rosto detectado = sucesso
                 if (modoFace == "CADASTRO") {
+
                     BiometriaStorage.salvarAssinatura(this, assinaturaAtual)
 
                     Toast.makeText(
@@ -139,6 +146,7 @@ class CameraActivity : AppCompatActivity() {
                     finish()
 
                 } else {
+
                     val result = Intent()
                     result.putExtra("FACE_OK", true)
                     result.putExtra("MODO_FACE", "VALIDACAO")
