@@ -89,7 +89,7 @@ class CameraActivity : AppCompatActivity() {
     private fun abrirCameraFrontal() {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 
-        // 🔥 FORÇA câmera frontal
+        // 🔥 Força câmera frontal (best effort)
         intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
         intent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
         intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true)
@@ -128,7 +128,9 @@ class CameraActivity : AppCompatActivity() {
                     return@runOnUiThread
                 }
 
-                // ✅ MVP: rosto detectado = sucesso
+                // ===============================
+                // CADASTRO FACIAL
+                // ===============================
                 if (modoFace == "CADASTRO") {
 
                     BiometriaStorage.salvarAssinatura(this, assinaturaAtual)
@@ -144,13 +146,43 @@ class CameraActivity : AppCompatActivity() {
                     result.putExtra("MODO_FACE", "CADASTRO")
                     setResult(Activity.RESULT_OK, result)
                     finish()
+                    return@runOnUiThread
+                }
 
-                } else {
+                // ===============================
+                // VALIDAÇÃO FACIAL (ANTIFRAUDE)
+                // ===============================
+                val assinaturaSalva = BiometriaStorage.obterAssinatura(this)
 
+                if (assinaturaSalva == null) {
+                    Toast.makeText(
+                        this,
+                        "Biometria não encontrada. Faça o cadastro primeiro.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    setResult(Activity.RESULT_CANCELED)
+                    finish()
+                    return@runOnUiThread
+                }
+
+                val valido = FaceUtils.compararAssinaturas(
+                    assinaturaAtual,
+                    assinaturaSalva
+                )
+
+                if (valido) {
                     val result = Intent()
                     result.putExtra("FACE_OK", true)
                     result.putExtra("MODO_FACE", "VALIDACAO")
                     setResult(Activity.RESULT_OK, result)
+                    finish()
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Rosto não confere. Acesso negado.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    setResult(Activity.RESULT_CANCELED)
                     finish()
                 }
             }
