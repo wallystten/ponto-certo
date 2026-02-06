@@ -17,14 +17,27 @@ object StorageUtils {
     private const val KEY_HISTORICO = "historico_pontos"
 
     /**
-     * Salva ponto com metadados antifraude
+     * Salva ponto SOMENTE se empresa e usuário existirem
      */
     fun salvarPonto(context: Context, registro: String) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
+        val empresa = obterEmpresa(context)
+        val usuario = obterUsuarioLogado(context)
+
+        if (empresa.isNullOrBlank() || usuario.isNullOrBlank()) {
+            throw IllegalStateException(
+                "Tentativa de registrar ponto sem empresa ou usuário"
+            )
+        }
+
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val historicoAtual = prefs.getString(KEY_HISTORICO, "") ?: ""
 
-        val registroSeguro = gerarRegistroSeguro(context, registro)
+        val registroSeguro = gerarRegistroSeguro(
+            registro = registro,
+            empresa = empresa,
+            usuario = usuario
+        )
 
         val novoHistorico = if (historicoAtual.isBlank()) {
             registroSeguro
@@ -38,17 +51,19 @@ object StorageUtils {
     }
 
     fun obterHistorico(context: Context): String {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_HISTORICO, "") ?: ""
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_HISTORICO, "") ?: ""
     }
 
     fun limparHistorico(context: Context) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().remove(KEY_HISTORICO).apply()
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .remove(KEY_HISTORICO)
+            .apply()
     }
 
     /* ===============================
-       USUÁRIO LOGADO
+       USUÁRIO
        =============================== */
 
     private const val KEY_USUARIO_LOGADO = "usuario_logado"
@@ -91,7 +106,7 @@ object StorageUtils {
     }
 
     fun existeEmpresa(context: Context): Boolean {
-        return obterEmpresa(context) != null
+        return !obterEmpresa(context).isNullOrBlank()
     }
 
     fun limparEmpresa(context: Context) {
@@ -102,18 +117,21 @@ object StorageUtils {
     }
 
     /* ===============================
-       🔐 ANTIFRAUDE (INTERNO)
+       🔐 ANTIFRAUDE
        =============================== */
 
-    private fun gerarRegistroSeguro(context: Context, registro: String): String {
+    private fun gerarRegistroSeguro(
+        registro: String,
+        empresa: String,
+        usuario: String
+    ): String {
+
         val dataSistema = SimpleDateFormat(
             "yyyy-MM-dd HH:mm:ss",
             Locale.getDefault()
         ).format(Date())
 
         val device = "${Build.MANUFACTURER} ${Build.MODEL}"
-        val empresa = obterEmpresa(context) ?: "SEM_EMPRESA"
-        val usuario = obterUsuarioLogado(context) ?: "SEM_USUARIO"
 
         return "$registro | $dataSistema | $empresa | $usuario | $device"
     }
