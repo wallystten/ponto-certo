@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // 2️⃣ Empresa obrigatória (só uma vez)
+            // 2️⃣ Empresa obrigatória (uma única vez)
             if (!EmpresaStorage.existeEmpresa(this)) {
                 startActivityForResult(
                     Intent(this, EmpresaActivity::class.java),
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     private fun iniciarFluxoFacial() {
         val intent = Intent(this, CameraActivity::class.java)
 
-        // 🔥 REGRA FINAL: cadastro facial acontece UMA ÚNICA VEZ
+        // 🔐 Cadastro facial ocorre UMA ÚNICA VEZ
         val modo = if (BiometriaStorage.existeCadastro(this)) {
             "VALIDACAO"
         } else {
@@ -100,20 +100,28 @@ class MainActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK && sucesso) {
 
                     if (modo == "VALIDACAO") {
-                        val dataHora = PontoUtils.registrarPonto()
-                        StorageUtils.salvarPonto(
-                            this,
-                            "$dataHora - PONTO REGISTRADO"
-                        )
+                        try {
+                            val dataHora = PontoUtils.registrarPonto()
+                            StorageUtils.salvarPonto(
+                                this,
+                                "$dataHora - PONTO REGISTRADO"
+                            )
 
-                        Toast.makeText(
-                            this,
-                            "Ponto registrado com sucesso!",
-                            Toast.LENGTH_LONG
-                        ).show()
+                            Toast.makeText(
+                                this,
+                                "Ponto registrado com sucesso!",
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                        } catch (e: IllegalStateException) {
+                            Toast.makeText(
+                                this,
+                                "Falha de segurança ao registrar o ponto.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
 
                     } else {
-                        // 🔐 Cadastro facial concluído → NÃO registra ponto
                         Toast.makeText(
                             this,
                             "Cadastro facial concluído. Toque novamente para bater o ponto.",
