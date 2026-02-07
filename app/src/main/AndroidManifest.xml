@@ -30,17 +30,22 @@
             </intent-filter>
         </activity>
 
-        <!-- Empresa (PASSO 6) -->
+        <!-- 👤 Usuário / CPF -->
+        <activity
+            android:name=".UsuarioActivity"
+            android:exported="false" />
+
+        <!-- 🏢 Empresa -->
         <activity
             android:name=".EmpresaActivity"
             android:exported="false" />
 
-        <!-- Câmera / Biometria facial -->
+        <!-- 📷 Câmera / Biometria facial -->
         <activity
             android:name=".CameraActivity"
             android:exported="false" />
 
-        <!-- Histórico -->
+        <!-- 📜 Histórico -->
         <activity
             android:name=".HistoricoActivity"
             android:exported="false" />
