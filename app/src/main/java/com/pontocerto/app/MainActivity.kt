@@ -12,6 +12,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REQUEST_FACE = 100
         private const val REQUEST_EMPRESA = 200
+        private const val REQUEST_USUARIO = 300
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,7 +27,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // 2️⃣ Empresa obrigatória (uma única vez)
+            // 2️⃣ Empresa
             if (!EmpresaStorage.existeEmpresa(this)) {
                 startActivityForResult(
                     Intent(this, EmpresaActivity::class.java),
@@ -35,7 +36,16 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // 3️⃣ Fluxo facial
+            // 3️⃣ Usuário (CPF)
+            if (StorageUtils.obterUsuarioLogado(this) == null) {
+                startActivityForResult(
+                    Intent(this, UsuarioActivity::class.java),
+                    REQUEST_USUARIO
+                )
+                return@setOnClickListener
+            }
+
+            // 4️⃣ Facial
             iniciarFluxoFacial()
         }
 
@@ -47,7 +57,6 @@ class MainActivity : AppCompatActivity() {
     private fun iniciarFluxoFacial() {
         val intent = Intent(this, CameraActivity::class.java)
 
-        // 🔐 Cadastro facial ocorre UMA ÚNICA VEZ
         val modo = if (BiometriaStorage.existeCadastro(this)) {
             "VALIDACAO"
         } else {
@@ -65,10 +74,11 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if (requestCode == PermissionUtils.REQUEST_CODE &&
+        if (
+            requestCode == PermissionUtils.REQUEST_CODE &&
             PermissionUtils.permissoesConcedidas(grantResults)
         ) {
-            iniciarFluxoFacial()
+            recreate()
         }
     }
 
@@ -81,13 +91,14 @@ class MainActivity : AppCompatActivity() {
 
         when (requestCode) {
 
-            REQUEST_EMPRESA -> {
+            REQUEST_EMPRESA,
+            REQUEST_USUARIO -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    iniciarFluxoFacial()
+                    recreate()
                 } else {
                     Toast.makeText(
                         this,
-                        "Empresa obrigatória para continuar.",
+                        "Etapa obrigatória não concluída.",
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -100,26 +111,17 @@ class MainActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK && sucesso) {
 
                     if (modo == "VALIDACAO") {
-                        try {
-                            val dataHora = PontoUtils.registrarPonto()
-                            StorageUtils.salvarPonto(
-                                this,
-                                "$dataHora - PONTO REGISTRADO"
-                            )
+                        val dataHora = PontoUtils.registrarPonto()
+                        StorageUtils.salvarPonto(
+                            this,
+                            "$dataHora - PONTO REGISTRADO"
+                        )
 
-                            Toast.makeText(
-                                this,
-                                "Ponto registrado com sucesso!",
-                                Toast.LENGTH_LONG
-                            ).show()
-
-                        } catch (e: IllegalStateException) {
-                            Toast.makeText(
-                                this,
-                                "Falha de segurança ao registrar o ponto.",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
+                        Toast.makeText(
+                            this,
+                            "Ponto registrado com sucesso!",
+                            Toast.LENGTH_LONG
+                        ).show()
 
                     } else {
                         Toast.makeText(
