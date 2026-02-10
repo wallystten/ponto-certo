@@ -10,9 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        private const val REQUEST_FACE = 100
-        private const val REQUEST_EMPRESA = 200
-        private const val REQUEST_USUARIO = 300
+        private const val REQUEST_USUARIO = 10
+        private const val REQUEST_EMPRESA = 20
+        private const val REQUEST_FACE = 30
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,16 +27,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // 2️⃣ Empresa
-            if (!EmpresaStorage.existeEmpresa(this)) {
-                startActivityForResult(
-                    Intent(this, EmpresaActivity::class.java),
-                    REQUEST_EMPRESA
-                )
-                return@setOnClickListener
-            }
-
-            // 3️⃣ Usuário (CPF)
+            // 2️⃣ Usuário (CPF)
             if (StorageUtils.obterUsuarioLogado(this) == null) {
                 startActivityForResult(
                     Intent(this, UsuarioActivity::class.java),
@@ -45,7 +36,16 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // 4️⃣ Facial
+            // 3️⃣ Empresa
+            if (!StorageUtils.existeEmpresa(this)) {
+                startActivityForResult(
+                    Intent(this, EmpresaActivity::class.java),
+                    REQUEST_EMPRESA
+                )
+                return@setOnClickListener
+            }
+
+            // 4️⃣ Biometria
             iniciarFluxoFacial()
         }
 
@@ -74,11 +74,10 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if (
-            requestCode == PermissionUtils.REQUEST_CODE &&
+        if (requestCode == PermissionUtils.REQUEST_CODE &&
             PermissionUtils.permissoesConcedidas(grantResults)
         ) {
-            recreate()
+            Toast.makeText(this, "Permissões concedidas", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -91,16 +90,19 @@ class MainActivity : AppCompatActivity() {
 
         when (requestCode) {
 
-            REQUEST_EMPRESA,
             REQUEST_USUARIO -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    recreate()
+                    findViewById<Button>(R.id.btnMarcarPonto).performClick()
                 } else {
-                    Toast.makeText(
-                        this,
-                        "Etapa obrigatória não concluída.",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(this, "CPF obrigatório.", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            REQUEST_EMPRESA -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    findViewById<Button>(R.id.btnMarcarPonto).performClick()
+                } else {
+                    Toast.makeText(this, "Empresa obrigatória.", Toast.LENGTH_LONG).show()
                 }
             }
 
@@ -122,7 +124,6 @@ class MainActivity : AppCompatActivity() {
                             "Ponto registrado com sucesso!",
                             Toast.LENGTH_LONG
                         ).show()
-
                     } else {
                         Toast.makeText(
                             this,
