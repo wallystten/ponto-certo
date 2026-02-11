@@ -20,38 +20,45 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         findViewById<Button>(R.id.btnMarcarPonto).setOnClickListener {
-
-            // 1️⃣ Permissões
-            if (!PermissionUtils.temPermissoes(this)) {
-                PermissionUtils.pedirPermissoes(this)
-                return@setOnClickListener
-            }
-
-            // 2️⃣ Usuário (CPF)
-            if (StorageUtils.obterUsuarioLogado(this) == null) {
-                startActivityForResult(
-                    Intent(this, UsuarioActivity::class.java),
-                    REQUEST_USUARIO
-                )
-                return@setOnClickListener
-            }
-
-            // 3️⃣ Empresa
-            if (!StorageUtils.existeEmpresa(this)) {
-                startActivityForResult(
-                    Intent(this, EmpresaActivity::class.java),
-                    REQUEST_EMPRESA
-                )
-                return@setOnClickListener
-            }
-
-            // 4️⃣ Biometria
-            iniciarFluxoFacial()
+            iniciarFluxoCompleto()
         }
 
         findViewById<Button?>(R.id.btnHistorico)?.setOnClickListener {
             startActivity(Intent(this, HistoricoActivity::class.java))
         }
+    }
+
+    /**
+     * 🔁 Fluxo único, linear e seguro
+     */
+    private fun iniciarFluxoCompleto() {
+
+        // 1️⃣ Permissões
+        if (!PermissionUtils.temPermissoes(this)) {
+            PermissionUtils.pedirPermissoes(this)
+            return
+        }
+
+        // 2️⃣ Usuário (CPF)
+        if (StorageUtils.obterUsuarioLogado(this) == null) {
+            startActivityForResult(
+                Intent(this, UsuarioActivity::class.java),
+                REQUEST_USUARIO
+            )
+            return
+        }
+
+        // 3️⃣ Empresa
+        if (!StorageUtils.existeEmpresa(this)) {
+            startActivityForResult(
+                Intent(this, EmpresaActivity::class.java),
+                REQUEST_EMPRESA
+            )
+            return
+        }
+
+        // 4️⃣ Biometria
+        iniciarFluxoFacial()
     }
 
     private fun iniciarFluxoFacial() {
@@ -77,7 +84,13 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == PermissionUtils.REQUEST_CODE &&
             PermissionUtils.permissoesConcedidas(grantResults)
         ) {
-            Toast.makeText(this, "Permissões concedidas", Toast.LENGTH_SHORT).show()
+            iniciarFluxoCompleto()
+        } else {
+            Toast.makeText(
+                this,
+                "Permissões obrigatórias para continuar.",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -88,54 +101,48 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        if (resultCode != Activity.RESULT_OK) {
+            Toast.makeText(this, "Ação obrigatória cancelada.", Toast.LENGTH_LONG).show()
+            return
+        }
+
         when (requestCode) {
 
-            REQUEST_USUARIO -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    findViewById<Button>(R.id.btnMarcarPonto).performClick()
-                } else {
-                    Toast.makeText(this, "CPF obrigatório.", Toast.LENGTH_LONG).show()
-                }
-            }
-
+            REQUEST_USUARIO,
             REQUEST_EMPRESA -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    findViewById<Button>(R.id.btnMarcarPonto).performClick()
-                } else {
-                    Toast.makeText(this, "Empresa obrigatória.", Toast.LENGTH_LONG).show()
-                }
+                // Continua o fluxo normalmente
+                iniciarFluxoCompleto()
             }
 
             REQUEST_FACE -> {
                 val sucesso = data?.getBooleanExtra("FACE_OK", false) ?: false
                 val modo = data?.getStringExtra("MODO_FACE") ?: ""
 
-                if (resultCode == Activity.RESULT_OK && sucesso) {
-
-                    if (modo == "VALIDACAO") {
-                        val dataHora = PontoUtils.registrarPonto()
-                        StorageUtils.salvarPonto(
-                            this,
-                            "$dataHora - PONTO REGISTRADO"
-                        )
-
-                        Toast.makeText(
-                            this,
-                            "Ponto registrado com sucesso!",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    } else {
-                        Toast.makeText(
-                            this,
-                            "Cadastro facial concluído. Toque novamente para bater o ponto.",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-
-                } else {
+                if (!sucesso) {
                     Toast.makeText(
                         this,
                         "Falha na validação facial.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return
+                }
+
+                if (modo == "VALIDACAO") {
+                    val dataHora = PontoUtils.registrarPonto()
+                    StorageUtils.salvarPonto(
+                        this,
+                        "$dataHora - PONTO REGISTRADO"
+                    )
+
+                    Toast.makeText(
+                        this,
+                        "Ponto registrado com sucesso!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Cadastro facial concluído. Toque novamente para bater o ponto.",
                         Toast.LENGTH_LONG
                     ).show()
                 }
