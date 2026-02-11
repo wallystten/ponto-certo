@@ -1,132 +1,47 @@
-package com.pontocerto.app
+,package com.pontocerto.app
 
+import android.Manifest
 import android.content.Context
-import android.os.Build
-import java.security.MessageDigest
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
+import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-object StorageUtils {
+object PontoUtils {
 
-    private const val PREFS_NAME = "ponto_certo_prefs"
+    fun registrarPonto(context: Context): String {
 
-    /* ===============================
-       HISTÓRICO DE PONTO
-       =============================== */
-
-    private const val KEY_HISTORICO = "historico_pontos"
-
-    fun salvarPonto(context: Context, registro: String) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-
-        val historicoAtual = prefs.getString(KEY_HISTORICO, "") ?: ""
-
-        val registroSeguro = gerarRegistroSeguro(context, registro)
-
-        val novoHistorico = if (historicoAtual.isBlank()) {
-            registroSeguro
-        } else {
-            "$historicoAtual\n$registroSeguro"
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            throw IllegalStateException("Permissão de localização não concedida.")
         }
 
-        prefs.edit()
-            .putString(KEY_HISTORICO, novoHistorico)
-            .apply()
-    }
+        val locationManager =
+            context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-    fun obterHistorico(context: Context): String {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_HISTORICO, "") ?: ""
-    }
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            throw IllegalStateException("GPS desativado.")
+        }
 
-    fun limparHistorico(context: Context) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .remove(KEY_HISTORICO)
-            .apply()
-    }
+        val location: Location? =
+            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
 
-    /* ===============================
-       USUÁRIO LOGADO
-       =============================== */
+        if (location == null) {
+            throw IllegalStateException("Localização indisponível.")
+        }
 
-    private const val KEY_USUARIO_LOGADO = "usuario_logado"
+        val latitude = location.latitude
+        val longitude = location.longitude
 
-    fun salvarUsuarioLogado(context: Context, cpf: String) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putString(KEY_USUARIO_LOGADO, cpf)
-            .apply()
-    }
+        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+        val dataHora = sdf.format(Date())
 
-    fun obterUsuarioLogado(context: Context): String? {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_USUARIO_LOGADO, null)
-    }
-
-    fun limparUsuarioLogado(context: Context) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .remove(KEY_USUARIO_LOGADO)
-            .apply()
-    }
-
-    /* ===============================
-       EMPRESA
-       =============================== */
-
-    private const val KEY_EMPRESA = "empresa_codigo"
-
-    fun salvarEmpresa(context: Context, codigoEmpresa: String) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putString(KEY_EMPRESA, codigoEmpresa)
-            .apply()
-    }
-
-    fun obterEmpresa(context: Context): String? {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_EMPRESA, null)
-    }
-
-    fun existeEmpresa(context: Context): Boolean {
-        return obterEmpresa(context) != null
-    }
-
-    fun limparEmpresa(context: Context) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .remove(KEY_EMPRESA)
-            .apply()
-    }
-
-    /* ===============================
-       🔐 ANTIFRAUDE COM ASSINATURA DIGITAL
-       =============================== */
-
-    private fun gerarRegistroSeguro(context: Context, registro: String): String {
-
-        val dataSistema = SimpleDateFormat(
-            "yyyy-MM-dd HH:mm:ss",
-            Locale.getDefault()
-        ).format(Date())
-
-        val device = "${Build.MANUFACTURER} ${Build.MODEL}"
-        val empresa = obterEmpresa(context) ?: "SEM_EMPRESA"
-        val usuario = obterUsuarioLogado(context) ?: "SEM_USUARIO"
-
-        val registroCompleto =
-            "$registro | $dataSistema | $empresa | $usuario | $device"
-
-        val assinatura = gerarHash(registroCompleto)
-
-        return "$registroCompleto | HASH:$assinatura"
-    }
-
-    private fun gerarHash(texto: String): String {
-        val md = MessageDigest.getInstance("SHA-256")
-        val bytes = md.digest(texto.toByteArray())
-        return bytes.joinToString("") { "%02x".format(it) }
+        return "$dataHora - LAT:$latitude LON:$longitude"
     }
 }
