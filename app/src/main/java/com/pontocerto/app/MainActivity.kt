@@ -35,7 +35,13 @@ class MainActivity : AppCompatActivity() {
      */
     private fun iniciarFluxoCompleto() {
 
-        // 🔒 NOVO: GPS obrigatório
+        // 1️⃣ Permissões primeiro
+        if (!PermissionUtils.temPermissoes(this)) {
+            PermissionUtils.pedirPermissoes(this)
+            return
+        }
+
+        // 2️⃣ GPS obrigatório
         if (!gpsAtivo()) {
             Toast.makeText(
                 this,
@@ -45,13 +51,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // 1️⃣ Permissões
-        if (!PermissionUtils.temPermissoes(this)) {
-            PermissionUtils.pedirPermissoes(this)
-            return
-        }
-
-        // 2️⃣ Usuário (CPF)
+        // 3️⃣ Usuário (CPF)
         if (StorageUtils.obterUsuarioLogado(this) == null) {
             startActivityForResult(
                 Intent(this, UsuarioActivity::class.java),
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // 3️⃣ Empresa
+        // 4️⃣ Empresa
         if (!StorageUtils.existeEmpresa(this)) {
             startActivityForResult(
                 Intent(this, EmpresaActivity::class.java),
@@ -69,12 +69,12 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // 4️⃣ Biometria
+        // 5️⃣ Biometria
         iniciarFluxoFacial()
     }
 
     /**
-     * 🔍 Verifica se o GPS está ativo
+     * 🔍 Verifica se GPS está ativo
      */
     private fun gpsAtivo(): Boolean {
         val locationManager =
@@ -140,6 +140,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             REQUEST_FACE -> {
+
                 val sucesso = data?.getBooleanExtra("FACE_OK", false) ?: false
                 val modo = data?.getStringExtra("MODO_FACE") ?: ""
 
@@ -153,17 +154,29 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 if (modo == "VALIDACAO") {
-                    val dataHora = PontoUtils.registrarPonto()
-                    StorageUtils.salvarPonto(
-                        this,
-                        "$dataHora - PONTO REGISTRADO"
-                    )
+                    try {
 
-                    Toast.makeText(
-                        this,
-                        "Ponto registrado com sucesso!",
-                        Toast.LENGTH_LONG
-                    ).show()
+                        val registro = PontoUtils.registrarPonto(this)
+
+                        StorageUtils.salvarPonto(
+                            this,
+                            "$registro - PONTO REGISTRADO"
+                        )
+
+                        Toast.makeText(
+                            this,
+                            "Ponto registrado com sucesso!",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                    } catch (e: IllegalStateException) {
+
+                        Toast.makeText(
+                            this,
+                            e.message ?: "Erro ao registrar ponto.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 } else {
                     Toast.makeText(
                         this,
