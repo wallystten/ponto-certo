@@ -1,7 +1,9 @@
 package com.pontocerto.app
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.location.LocationManager
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
@@ -33,6 +35,16 @@ class MainActivity : AppCompatActivity() {
      */
     private fun iniciarFluxoCompleto() {
 
+        // 🔒 NOVO: GPS obrigatório
+        if (!gpsAtivo()) {
+            Toast.makeText(
+                this,
+                "Ative o GPS para registrar o ponto.",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
         // 1️⃣ Permissões
         if (!PermissionUtils.temPermissoes(this)) {
             PermissionUtils.pedirPermissoes(this)
@@ -59,6 +71,16 @@ class MainActivity : AppCompatActivity() {
 
         // 4️⃣ Biometria
         iniciarFluxoFacial()
+    }
+
+    /**
+     * 🔍 Verifica se o GPS está ativo
+     */
+    private fun gpsAtivo(): Boolean {
+        val locationManager =
+            getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
     private fun iniciarFluxoFacial() {
@@ -102,7 +124,11 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (resultCode != Activity.RESULT_OK) {
-            Toast.makeText(this, "Ação obrigatória cancelada.", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                "Ação obrigatória cancelada.",
+                Toast.LENGTH_LONG
+            ).show()
             return
         }
 
@@ -110,7 +136,6 @@ class MainActivity : AppCompatActivity() {
 
             REQUEST_USUARIO,
             REQUEST_EMPRESA -> {
-                // Continua o fluxo normalmente
                 iniciarFluxoCompleto()
             }
 
