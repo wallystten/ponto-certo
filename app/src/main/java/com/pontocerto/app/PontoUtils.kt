@@ -47,3 +47,4 @@ object PontoUtils {
         return "$dataHora - LAT:$latitude LON:$longitude"
     }
 }
+ 
