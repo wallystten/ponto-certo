@@ -28,8 +28,8 @@ class EmpresaActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // 💾 Salva empresa localmente
-            EmpresaStorage.salvarEmpresa(this, codigo)
+            // 🔥 Agora salva no mesmo storage que o Main verifica
+            StorageUtils.salvarEmpresa(this, codigo)
 
             Toast.makeText(
                 this,
@@ -37,7 +37,6 @@ class EmpresaActivity : AppCompatActivity() {
                 Toast.LENGTH_LONG
             ).show()
 
-            // 🔁 Retorna sucesso para quem chamou
             setResult(Activity.RESULT_OK)
             finish()
         }
