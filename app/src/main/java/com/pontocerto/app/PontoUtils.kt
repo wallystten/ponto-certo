@@ -27,18 +27,25 @@ object PontoUtils {
             context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         // 2️⃣ Verifica se GPS está ativo
-        val gpsAtivo = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-
-        if (!gpsAtivo) {
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             throw IllegalStateException("GPS desativado.")
         }
 
-        // 3️⃣ Pega última localização conhecida
+        // 3️⃣ Tenta pegar última localização
         val location: Location? =
-            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            try {
+                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            } catch (e: Exception) {
+                null
+            }
 
-        val latitude = location?.latitude ?: 0.0
-        val longitude = location?.longitude ?: 0.0
+        // 🔒 Se não conseguiu localização válida
+        if (location == null) {
+            throw IllegalStateException("Localização indisponível.")
+        }
+
+        val latitude = location.latitude
+        val longitude = location.longitude
 
         // 4️⃣ Data e hora
         val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
@@ -47,4 +54,3 @@ object PontoUtils {
         return "$dataHora - LAT:$latitude LON:$longitude"
     }
 }
- 
