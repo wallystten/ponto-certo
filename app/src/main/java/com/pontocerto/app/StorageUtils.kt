@@ -2,6 +2,7 @@ package com.pontocerto.app
 
 import android.content.Context
 import android.os.Build
+import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -16,28 +17,12 @@ object StorageUtils {
 
     private const val KEY_HISTORICO = "historico_pontos"
 
-    /**
-     * Salva ponto SOMENTE se empresa e usuário existirem
-     */
     fun salvarPonto(context: Context, registro: String) {
-
-        val empresa = obterEmpresa(context)
-        val usuario = obterUsuarioLogado(context)
-
-        if (empresa.isNullOrBlank() || usuario.isNullOrBlank()) {
-            throw IllegalStateException(
-                "Tentativa de registrar ponto sem empresa ou usuário"
-            )
-        }
-
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
         val historicoAtual = prefs.getString(KEY_HISTORICO, "") ?: ""
 
-        val registroSeguro = gerarRegistroSeguro(
-            registro = registro,
-            empresa = empresa,
-            usuario = usuario
-        )
+        val registroSeguro = gerarRegistroSeguro(context, registro)
 
         val novoHistorico = if (historicoAtual.isBlank()) {
             registroSeguro
@@ -63,7 +48,7 @@ object StorageUtils {
     }
 
     /* ===============================
-       USUÁRIO
+       USUÁRIO LOGADO
        =============================== */
 
     private const val KEY_USUARIO_LOGADO = "usuario_logado"
@@ -106,7 +91,7 @@ object StorageUtils {
     }
 
     fun existeEmpresa(context: Context): Boolean {
-        return !obterEmpresa(context).isNullOrBlank()
+        return obterEmpresa(context) != null
     }
 
     fun limparEmpresa(context: Context) {
@@ -117,14 +102,10 @@ object StorageUtils {
     }
 
     /* ===============================
-       🔐 ANTIFRAUDE
+       🔐 ANTIFRAUDE COM ASSINATURA DIGITAL
        =============================== */
 
-    private fun gerarRegistroSeguro(
-        registro: String,
-        empresa: String,
-        usuario: String
-    ): String {
+    private fun gerarRegistroSeguro(context: Context, registro: String): String {
 
         val dataSistema = SimpleDateFormat(
             "yyyy-MM-dd HH:mm:ss",
@@ -132,7 +113,20 @@ object StorageUtils {
         ).format(Date())
 
         val device = "${Build.MANUFACTURER} ${Build.MODEL}"
+        val empresa = obterEmpresa(context) ?: "SEM_EMPRESA"
+        val usuario = obterUsuarioLogado(context) ?: "SEM_USUARIO"
 
-        return "$registro | $dataSistema | $empresa | $usuario | $device"
+        val registroCompleto =
+            "$registro | $dataSistema | $empresa | $usuario | $device"
+
+        val assinatura = gerarHash(registroCompleto)
+
+        return "$registroCompleto | HASH:$assinatura"
+    }
+
+    private fun gerarHash(texto: String): String {
+        val md = MessageDigest.getInstance("SHA-256")
+        val bytes = md.digest(texto.toByteArray())
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 }
