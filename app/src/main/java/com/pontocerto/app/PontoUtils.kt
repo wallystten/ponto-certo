@@ -1,4 +1,4 @@
-,package com.pontocerto.app
+package com.pontocerto.app
 
 import android.Manifest
 import android.content.Context
@@ -14,6 +14,7 @@ object PontoUtils {
 
     fun registrarPonto(context: Context): String {
 
+        // 1️⃣ Verifica permissão
         if (ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -25,13 +26,20 @@ object PontoUtils {
         val locationManager =
             context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
+        // 2️⃣ Verifica se GPS está ativo
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             throw IllegalStateException("GPS desativado.")
         }
 
+        // 3️⃣ Tenta pegar última localização
         val location: Location? =
-            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            try {
+                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            } catch (e: Exception) {
+                null
+            }
 
+        // 🔒 Se não conseguiu localização válida
         if (location == null) {
             throw IllegalStateException("Localização indisponível.")
         }
@@ -39,6 +47,7 @@ object PontoUtils {
         val latitude = location.latitude
         val longitude = location.longitude
 
+        // 4️⃣ Data e hora
         val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
         val dataHora = sdf.format(Date())
 
