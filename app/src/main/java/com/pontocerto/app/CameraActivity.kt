@@ -38,10 +38,6 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    /* ===============================
-       PERMISSÃO DE CÂMERA
-       =============================== */
-
     private fun verificarPermissaoCamera() {
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -65,31 +61,25 @@ class CameraActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.isNotEmpty() &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED
-            ) {
-                abrirCameraFrontal()
-            } else {
-                Toast.makeText(
-                    this,
-                    "Permissão da câmera é obrigatória.",
-                    Toast.LENGTH_LONG
-                ).show()
-                setResult(Activity.RESULT_CANCELED)
-                finish()
-            }
+        if (requestCode == REQUEST_CAMERA_PERMISSION &&
+            grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            abrirCameraFrontal()
+        } else {
+            Toast.makeText(
+                this,
+                "Permissão da câmera é obrigatória.",
+                Toast.LENGTH_LONG
+            ).show()
+            setResult(Activity.RESULT_CANCELED)
+            finish()
         }
     }
-
-    /* ===============================
-       CÂMERA FRONTAL (FORÇADA)
-       =============================== */
 
     private fun abrirCameraFrontal() {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 
-        // 🔥 Força câmera frontal (best effort)
         intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
         intent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
         intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true)
@@ -114,77 +104,28 @@ class CameraActivity : AppCompatActivity() {
             return
         }
 
-        FaceUtils.gerarAssinaturaFacial(bitmap) { assinaturaAtual ->
+        // 🔥 NOVO SISTEMA SIMPLIFICADO
+        FaceUtils.detectarRosto(bitmap) { rostoDetectado ->
+
             runOnUiThread {
 
-                if (assinaturaAtual == null) {
+                if (!rostoDetectado) {
                     Toast.makeText(
                         this,
-                        "Rosto não detectado. Ajuste a posição e tente novamente.",
+                        "Rosto não detectado. Ajuste a posição.",
                         Toast.LENGTH_LONG
                     ).show()
+
                     setResult(Activity.RESULT_CANCELED)
                     finish()
                     return@runOnUiThread
                 }
 
-                // ===============================
-                // CADASTRO FACIAL
-                // ===============================
-                if (modoFace == "CADASTRO") {
-
-                    BiometriaStorage.salvarAssinatura(this, assinaturaAtual)
-
-                    Toast.makeText(
-                        this,
-                        "Cadastro facial concluído com sucesso!",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                    val result = Intent()
-                    result.putExtra("FACE_OK", true)
-                    result.putExtra("MODO_FACE", "CADASTRO")
-                    setResult(Activity.RESULT_OK, result)
-                    finish()
-                    return@runOnUiThread
-                }
-
-                // ===============================
-                // VALIDAÇÃO FACIAL (ANTIFRAUDE)
-                // ===============================
-                val assinaturaSalva = BiometriaStorage.obterAssinatura(this)
-
-                if (assinaturaSalva == null) {
-                    Toast.makeText(
-                        this,
-                        "Biometria não encontrada. Faça o cadastro primeiro.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    setResult(Activity.RESULT_CANCELED)
-                    finish()
-                    return@runOnUiThread
-                }
-
-                val valido = FaceUtils.compararAssinaturas(
-                    assinaturaAtual,
-                    assinaturaSalva
-                )
-
-                if (valido) {
-                    val result = Intent()
-                    result.putExtra("FACE_OK", true)
-                    result.putExtra("MODO_FACE", "VALIDACAO")
-                    setResult(Activity.RESULT_OK, result)
-                    finish()
-                } else {
-                    Toast.makeText(
-                        this,
-                        "Rosto não confere. Acesso negado.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    setResult(Activity.RESULT_CANCELED)
-                    finish()
-                }
+                val result = Intent()
+                result.putExtra("FACE_OK", true)
+                result.putExtra("MODO_FACE", modoFace)
+                setResult(Activity.RESULT_OK, result)
+                finish()
             }
         }
     }
