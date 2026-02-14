@@ -1,81 +1,155 @@
-private fun iniciarCamera() {
+package com.pontocerto.app
 
-    val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.*
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.FaceDetection
+import com.google.mlkit.vision.face.FaceDetectorOptions
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
-    cameraProviderFuture.addListener({
+class CameraActivity : AppCompatActivity() {
 
-        val cameraProvider = cameraProviderFuture.get()
+    private lateinit var previewView: PreviewView
+    private lateinit var cameraExecutor: ExecutorService
+    private var modoFace = "VALIDACAO"
+    private var validacaoRealizada = false
 
-        val preview = Preview.Builder().build()
-        preview.setSurfaceProvider(previewView.surfaceProvider)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_camera)
 
-        val imageAnalyzer = ImageAnalysis.Builder()
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .build()
+        modoFace = intent.getStringExtra("MODO_FACE") ?: "VALIDACAO"
 
-        imageAnalyzer.setAnalyzer(cameraExecutor) { imageProxy ->
+        previewView = findViewById(R.id.previewView)
 
-            if (validacaoRealizada) {
-                imageProxy.close()
-                return@setAnalyzer
-            }
+        findViewById<TextView>(R.id.txtInstrucao).text =
+            if (modoFace == "CADASTRO")
+                "Centralize o rosto para cadastro"
+            else
+                "Piscar para confirmar identidade"
 
-            val mediaImage = imageProxy.image
-            if (mediaImage != null) {
+        cameraExecutor = Executors.newSingleThreadExecutor()
 
-                val image = InputImage.fromMediaImage(
-                    mediaImage,
-                    imageProxy.imageInfo.rotationDegrees
-                )
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            iniciarCamera()
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                100
+            )
+        }
+    }
 
-                val options = FaceDetectorOptions.Builder()
-                    .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-                    .enableTracking()
-                    .build()
+    private fun iniciarCamera() {
 
-                val detector = FaceDetection.getClient(options)
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-                detector.process(image)
-                    .addOnSuccessListener { faces ->
+        cameraProviderFuture.addListener({
 
-                        if (faces.isNotEmpty()) {
+            val cameraProvider = cameraProviderFuture.get()
 
-                            val face = faces[0]
+            val preview = Preview.Builder().build()
+            preview.setSurfaceProvider(previewView.surfaceProvider)
 
-                            // 👁️ Liveness simplificado:
-                            val olhoEsquerdo = face.leftEyeOpenProbability
-                            val olhoDireito = face.rightEyeOpenProbability
+            val imageAnalyzer = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
 
-                            if (olhoEsquerdo != null &&
-                                olhoDireito != null &&
-                                (olhoEsquerdo < 0.5f || olhoDireito < 0.5f)
-                            ) {
+            imageAnalyzer.setAnalyzer(cameraExecutor) { imageProxy ->
 
-                                validacaoRealizada = true
+                if (validacaoRealizada) {
+                    imageProxy.close()
+                    return@setAnalyzer
+                }
 
-                                runOnUiThread {
-                                    sucessoFacial()
+                val mediaImage = imageProxy.image
+                if (mediaImage != null) {
+
+                    val image = InputImage.fromMediaImage(
+                        mediaImage,
+                        imageProxy.imageInfo.rotationDegrees
+                    )
+
+                    val options = FaceDetectorOptions.Builder()
+                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+                        .enableTracking()
+                        .build()
+
+                    val detector = FaceDetection.getClient(options)
+
+                    detector.process(image)
+                        .addOnSuccessListener { faces ->
+
+                            if (faces.isNotEmpty()) {
+
+                                val face = faces[0]
+
+                                val olhoEsquerdo = face.leftEyeOpenProbability
+                                val olhoDireito = face.rightEyeOpenProbability
+
+                                if (olhoEsquerdo != null &&
+                                    olhoDireito != null &&
+                                    (olhoEsquerdo < 0.4f || olhoDireito < 0.4f)
+                                ) {
+
+                                    validacaoRealizada = true
+
+                                    runOnUiThread {
+                                        sucessoFacial()
+                                    }
                                 }
                             }
                         }
-                    }
-                    .addOnCompleteListener {
-                        imageProxy.close()
-                    }
-            } else {
-                imageProxy.close()
+                        .addOnCompleteListener {
+                            imageProxy.close()
+                        }
+                } else {
+                    imageProxy.close()
+                }
             }
-        }
 
-        val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
-        cameraProvider.unbindAll()
-        cameraProvider.bindToLifecycle(
-            this,
-            cameraSelector,
-            preview,
-            imageAnalyzer
-        )
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                this,
+                cameraSelector,
+                preview,
+                imageAnalyzer
+            )
 
-    }, ContextCompat.getMainExecutor(this))
-}l
+        }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun sucessoFacial() {
+
+        val result = Intent()
+        result.putExtra("FACE_OK", true)
+        result.putExtra("MODO_FACE", modoFace)
+
+        setResult(Activity.RESULT_OK, result)
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
+    }
+}
