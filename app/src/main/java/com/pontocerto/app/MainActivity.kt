@@ -1,4 +1,4 @@
-            package com.pontocerto.app
+package com.pontocerto.app
 
 import android.app.Activity
 import android.content.Context
