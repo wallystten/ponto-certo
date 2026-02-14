@@ -1,4 +1,4 @@
-package com.pontocerto.app
+            package com.pontocerto.app
 
 import android.app.Activity
 import android.content.Context
@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun iniciarFluxoCompleto() {
 
-        // 1️⃣ Permissões primeiro
+        // 1️⃣ Permissões
         if (!PermissionUtils.temPermissoes(this)) {
             PermissionUtils.pedirPermissoes(this)
             return
@@ -84,6 +84,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun iniciarFluxoFacial() {
+
         val intent = Intent(this, CameraActivity::class.java)
 
         val modo = if (BiometriaStorage.existeCadastro(this)) {
@@ -142,6 +143,7 @@ class MainActivity : AppCompatActivity() {
             REQUEST_FACE -> {
 
                 val sucesso = data?.getBooleanExtra("FACE_OK", false) ?: false
+                val modo = data?.getStringExtra("MODO_FACE") ?: ""
 
                 if (!sucesso) {
                     Toast.makeText(
@@ -152,9 +154,22 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
 
+                // 🔥 AQUI ESTÁ A CORREÇÃO
+
+                if (modo == "CADASTRO") {
+
+                    Toast.makeText(
+                        this,
+                        "Cadastro facial concluído. Toque novamente para bater o ponto.",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    return
+                }
+
+                // ✅ Apenas validação registra ponto
                 try {
 
-                    // 🔥 Agora registra ponto mesmo sendo primeiro cadastro
                     val registro = PontoUtils.registrarPonto(this)
 
                     StorageUtils.salvarPonto(
@@ -179,4 +194,4 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-}
+}registrar ponto
