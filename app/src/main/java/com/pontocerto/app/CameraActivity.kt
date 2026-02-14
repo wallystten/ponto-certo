@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -24,10 +25,28 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var previewView: PreviewView
     private lateinit var cameraExecutor: ExecutorService
     private var modoFace = "VALIDACAO"
+    private var validacaoRealizada = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
+
+        // 🔒 Bloqueia print e gravação de tela
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
+
+        // 🛑 Bloqueia dispositivo comprometido
+        if (SecurityUtils.dispositivoComprometido()) {
+            Toast.makeText(
+                this,
+                "Dispositivo não seguro detectado.",
+                Toast.LENGTH_LONG
+            ).show()
+            finish()
+            return
+        }
 
         modoFace = intent.getStringExtra("MODO_FACE") ?: "VALIDACAO"
 
@@ -35,9 +54,9 @@ class CameraActivity : AppCompatActivity() {
 
         findViewById<TextView>(R.id.txtInstrucao).text =
             if (modoFace == "CADASTRO")
-                "Centralize o rosto para cadastro"
+                "Centralize o rosto e pisque lentamente"
             else
-                "Validando identidade..."
+                "Confirme identidade piscando"
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -73,6 +92,11 @@ class CameraActivity : AppCompatActivity() {
 
             imageAnalyzer.setAnalyzer(cameraExecutor) { imageProxy ->
 
+                if (validacaoRealizada) {
+                    imageProxy.close()
+                    return@setAnalyzer
+                }
+
                 val mediaImage = imageProxy.image
                 if (mediaImage != null) {
 
@@ -82,7 +106,9 @@ class CameraActivity : AppCompatActivity() {
                     )
 
                     val options = FaceDetectorOptions.Builder()
-                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+                        .enableTracking()
+                        .enableClassification() // 👁️ permite detectar olhos
                         .build()
 
                     val detector = FaceDetection.getClient(options)
@@ -92,8 +118,24 @@ class CameraActivity : AppCompatActivity() {
 
                             if (faces.isNotEmpty()) {
 
-                                runOnUiThread {
-                                    sucessoFacial()
+                                val face = faces[0]
+
+                                val olhoEsquerdo =
+                                    face.leftEyeOpenProbability ?: 1f
+
+                                val olhoDireito =
+                                    face.rightEyeOpenProbability ?: 1f
+
+                                // 👁️ Liveness: exige olho parcialmente fechado
+                                if (olhoEsquerdo < 0.5f ||
+                                    olhoDireito < 0.5f
+                                ) {
+
+                                    validacaoRealizada = true
+
+                                    runOnUiThread {
+                                        sucessoFacial()
+                                    }
                                 }
                             }
                         }
