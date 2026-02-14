@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -18,6 +17,7 @@ import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.math.abs
 
 class CameraActivity : AppCompatActivity() {
 
@@ -27,9 +27,14 @@ class CameraActivity : AppCompatActivity() {
     private var modoFace = "VALIDACAO"
     private var validacaoRealizada = false
 
+    // 🔐 Controle de movimento
+    private var anguloInicial: Float? = null
+    private val MOVIMENTO_MINIMO = 12f
+
     private val detector by lazy {
         val options = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+            .enableTracking()
             .build()
 
         FaceDetection.getClient(options)
@@ -45,9 +50,9 @@ class CameraActivity : AppCompatActivity() {
 
         findViewById<TextView>(R.id.txtInstrucao).text =
             if (modoFace == "CADASTRO")
-                "Centralize o rosto para cadastro"
+                "Vire levemente o rosto para cadastrar"
             else
-                "Validando identidade..."
+                "Vire levemente o rosto para validar"
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -99,12 +104,26 @@ class CameraActivity : AppCompatActivity() {
                     detector.process(image)
                         .addOnSuccessListener { faces ->
 
-                            if (faces.isNotEmpty() && !validacaoRealizada) {
+                            if (faces.isNotEmpty()) {
 
-                                validacaoRealizada = true
+                                val face = faces[0]
+                                val anguloAtual = face.headEulerAngleY
 
-                                runOnUiThread {
-                                    sucessoFacial()
+                                if (anguloInicial == null) {
+                                    anguloInicial = anguloAtual
+                                } else {
+                                    val diferenca =
+                                        abs(anguloAtual - anguloInicial!!)
+
+                                    if (diferenca >= MOVIMENTO_MINIMO &&
+                                        !validacaoRealizada
+                                    ) {
+                                        validacaoRealizada = true
+
+                                        runOnUiThread {
+                                            sucessoFacial()
+                                        }
+                                    }
                                 }
                             }
                         }
