@@ -4,20 +4,25 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.os.Bundle
-import android.provider.MediaStore
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.*
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.FaceDetection
+import com.google.mlkit.vision.face.FaceDetectorOptions
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class CameraActivity : AppCompatActivity() {
 
-    private val REQUEST_IMAGE = 200
-    private val REQUEST_CAMERA_PERMISSION = 300
+    private lateinit var previewView: PreviewView
+    private lateinit var cameraExecutor: ExecutorService
     private var modoFace = "VALIDACAO"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,107 +31,105 @@ class CameraActivity : AppCompatActivity() {
 
         modoFace = intent.getStringExtra("MODO_FACE") ?: "VALIDACAO"
 
-        findViewById<TextView?>(R.id.txtInstrucao)?.text =
-            if (modoFace == "CADASTRO") {
-                "Centralize o rosto e mantenha boa iluminação"
-            } else {
-                "Confirme sua identidade"
-            }
+        previewView = findViewById(R.id.previewView)
 
-        findViewById<Button>(R.id.btnAbrirCamera).setOnClickListener {
-            verificarPermissaoCamera()
-        }
-    }
+        findViewById<TextView>(R.id.txtInstrucao).text =
+            if (modoFace == "CADASTRO")
+                "Centralize o rosto para cadastro"
+            else
+                "Validando identidade..."
 
-    private fun verificarPermissaoCamera() {
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            abrirCameraFrontal()
+            iniciarCamera()
         } else {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.CAMERA),
-                REQUEST_CAMERA_PERMISSION
+                100
             )
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    private fun iniciarCamera() {
 
-        if (requestCode == REQUEST_CAMERA_PERMISSION &&
-            grantResults.isNotEmpty() &&
-            grantResults[0] == PackageManager.PERMISSION_GRANTED
-        ) {
-            abrirCameraFrontal()
-        } else {
-            Toast.makeText(
-                this,
-                "Permissão da câmera é obrigatória.",
-                Toast.LENGTH_LONG
-            ).show()
-            setResult(Activity.RESULT_CANCELED)
-            finish()
-        }
-    }
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-    private fun abrirCameraFrontal() {
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        cameraProviderFuture.addListener({
 
-        intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
-        intent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
-        intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true)
+            val cameraProvider = cameraProviderFuture.get()
 
-        startActivityForResult(intent, REQUEST_IMAGE)
-    }
+            val preview = Preview.Builder().build()
+            preview.setSurfaceProvider(previewView.surfaceProvider)
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+            val imageAnalyzer = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
 
-        if (requestCode != REQUEST_IMAGE || resultCode != Activity.RESULT_OK) {
-            setResult(Activity.RESULT_CANCELED)
-            finish()
-            return
-        }
+            imageAnalyzer.setAnalyzer(cameraExecutor) { imageProxy ->
 
-        val bitmap = data?.extras?.get("data") as? Bitmap
-        if (bitmap == null) {
-            Toast.makeText(this, "Erro ao capturar imagem.", Toast.LENGTH_LONG).show()
-            setResult(Activity.RESULT_CANCELED)
-            finish()
-            return
-        }
+                val mediaImage = imageProxy.image
+                if (mediaImage != null) {
 
-        // 🔥 NOVO SISTEMA SIMPLIFICADO
-        FaceUtils.detectarRosto(bitmap) { rostoDetectado ->
+                    val image = InputImage.fromMediaImage(
+                        mediaImage,
+                        imageProxy.imageInfo.rotationDegrees
+                    )
 
-            runOnUiThread {
+                    val options = FaceDetectorOptions.Builder()
+                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+                        .build()
 
-                if (!rostoDetectado) {
-                    Toast.makeText(
-                        this,
-                        "Rosto não detectado. Ajuste a posição.",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    val detector = FaceDetection.getClient(options)
 
-                    setResult(Activity.RESULT_CANCELED)
-                    finish()
-                    return@runOnUiThread
+                    detector.process(image)
+                        .addOnSuccessListener { faces ->
+
+                            if (faces.isNotEmpty()) {
+
+                                runOnUiThread {
+                                    sucessoFacial()
+                                }
+                            }
+                        }
+                        .addOnCompleteListener {
+                            imageProxy.close()
+                        }
+                } else {
+                    imageProxy.close()
                 }
-
-                val result = Intent()
-                result.putExtra("FACE_OK", true)
-                result.putExtra("MODO_FACE", modoFace)
-                setResult(Activity.RESULT_OK, result)
-                finish()
             }
-        }
+
+            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                this,
+                cameraSelector,
+                preview,
+                imageAnalyzer
+            )
+
+        }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun sucessoFacial() {
+
+        val result = Intent()
+        result.putExtra("FACE_OK", true)
+        result.putExtra("MODO_FACE", modoFace)
+
+        setResult(Activity.RESULT_OK, result)
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
     }
 }
