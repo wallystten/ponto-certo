@@ -23,8 +23,17 @@ class CameraActivity : AppCompatActivity() {
 
     private lateinit var previewView: PreviewView
     private lateinit var cameraExecutor: ExecutorService
+
     private var modoFace = "VALIDACAO"
     private var validacaoRealizada = false
+
+    private val detector by lazy {
+        val options = FaceDetectorOptions.Builder()
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+            .build()
+
+        FaceDetection.getClient(options)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +47,7 @@ class CameraActivity : AppCompatActivity() {
             if (modoFace == "CADASTRO")
                 "Centralize o rosto para cadastro"
             else
-                "Piscar para confirmar identidade"
+                "Validando identidade..."
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -87,39 +96,22 @@ class CameraActivity : AppCompatActivity() {
                         imageProxy.imageInfo.rotationDegrees
                     )
 
-                    val options = FaceDetectorOptions.Builder()
-                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-                        .enableTracking()
-                        .build()
-
-                    val detector = FaceDetection.getClient(options)
-
                     detector.process(image)
                         .addOnSuccessListener { faces ->
 
-                            if (faces.isNotEmpty()) {
+                            if (faces.isNotEmpty() && !validacaoRealizada) {
 
-                                val face = faces[0]
+                                validacaoRealizada = true
 
-                                val olhoEsquerdo = face.leftEyeOpenProbability
-                                val olhoDireito = face.rightEyeOpenProbability
-
-                                if (olhoEsquerdo != null &&
-                                    olhoDireito != null &&
-                                    (olhoEsquerdo < 0.4f || olhoDireito < 0.4f)
-                                ) {
-
-                                    validacaoRealizada = true
-
-                                    runOnUiThread {
-                                        sucessoFacial()
-                                    }
+                                runOnUiThread {
+                                    sucessoFacial()
                                 }
                             }
                         }
                         .addOnCompleteListener {
                             imageProxy.close()
                         }
+
                 } else {
                     imageProxy.close()
                 }
