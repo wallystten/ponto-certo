@@ -30,18 +30,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 🔁 Fluxo único, linear e seguro
-     */
     private fun iniciarFluxoCompleto() {
 
-        // 1️⃣ Permissões
         if (!PermissionUtils.temPermissoes(this)) {
             PermissionUtils.pedirPermissoes(this)
             return
         }
 
-        // 2️⃣ GPS obrigatório
         if (!gpsAtivo()) {
             Toast.makeText(
                 this,
@@ -51,7 +46,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // 3️⃣ Usuário (CPF)
         if (StorageUtils.obterUsuarioLogado(this) == null) {
             startActivityForResult(
                 Intent(this, UsuarioActivity::class.java),
@@ -60,7 +54,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // 4️⃣ Empresa
         if (!StorageUtils.existeEmpresa(this)) {
             startActivityForResult(
                 Intent(this, EmpresaActivity::class.java),
@@ -69,13 +62,9 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // 5️⃣ Biometria
         iniciarFluxoFacial()
     }
 
-    /**
-     * 🔍 Verifica se GPS está ativo
-     */
     private fun gpsAtivo(): Boolean {
         val locationManager =
             getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -84,7 +73,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun iniciarFluxoFacial() {
-
         val intent = Intent(this, CameraActivity::class.java)
 
         val modo = if (BiometriaStorage.existeCadastro(this)) {
@@ -154,20 +142,15 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
 
-                // 🔥 AQUI ESTÁ A CORREÇÃO
-
                 if (modo == "CADASTRO") {
-
                     Toast.makeText(
                         this,
                         "Cadastro facial concluído. Toque novamente para bater o ponto.",
                         Toast.LENGTH_LONG
                     ).show()
-
                     return
                 }
 
-                // ✅ Apenas validação registra ponto
                 try {
 
                     val registro = PontoUtils.registrarPonto(this)
@@ -194,4 +177,4 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-}registrar ponto
+}
