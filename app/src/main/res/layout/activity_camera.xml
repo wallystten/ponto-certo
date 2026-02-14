@@ -1,35 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:background="#FFFFFF">
 
     <!-- Título -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Confirme sua presença"
-        android:textSize="20sp"
+        android:text="Validação de Presença"
+        android:textSize="22sp"
         android:textStyle="bold"
-        android:layout_marginBottom="12dp" />
+        android:textColor="#000000"
+        android:layout_marginBottom="8dp" />
 
-    <!-- Instrução dinâmica (CADASTRO / VALIDAÇÃO) -->
+    <!-- Subtítulo -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Olhe diretamente para a câmera frontal"
+        android:textSize="14sp"
+        android:textColor="#777777"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Instrução dinâmica -->
     <TextView
         android:id="@+id/txtInstrucao"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Centralize o rosto e mantenha boa iluminação"
         android:textSize="14sp"
-        android:textColor="#666666"
-        android:layout_marginBottom="24dp" />
+        android:textStyle="italic"
+        android:textColor="#555555"
+        android:layout_marginBottom="32dp" />
 
-    <!-- Botão câmera -->
+    <!-- Botão -->
     <Button
         android:id="@+id/btnAbrirCamera"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Abrir câmera" />
+        android:text="Iniciar verificação"
+        android:padding="14dp" />
 
 </LinearLayout>
