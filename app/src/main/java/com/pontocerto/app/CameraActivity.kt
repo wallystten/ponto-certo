@@ -1,177 +1,81 @@
-package com.pontocerto.app
+private fun iniciarCamera() {
 
-import android.Manifest
-import android.app.Activity
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Bundle
-import android.view.WindowManager
-import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.face.FaceDetection
-import com.google.mlkit.vision.face.FaceDetectorOptions
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+    val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-class CameraActivity : AppCompatActivity() {
+    cameraProviderFuture.addListener({
 
-    private lateinit var previewView: PreviewView
-    private lateinit var cameraExecutor: ExecutorService
-    private var modoFace = "VALIDACAO"
-    private var validacaoRealizada = false
+        val cameraProvider = cameraProviderFuture.get()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_camera)
+        val preview = Preview.Builder().build()
+        preview.setSurfaceProvider(previewView.surfaceProvider)
 
-        // 🔒 Bloqueia print e gravação de tela
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_SECURE,
-            WindowManager.LayoutParams.FLAG_SECURE
-        )
+        val imageAnalyzer = ImageAnalysis.Builder()
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
 
-        // 🛑 Bloqueia dispositivo comprometido
-        if (SecurityUtils.dispositivoComprometido()) {
-            Toast.makeText(
-                this,
-                "Dispositivo não seguro detectado.",
-                Toast.LENGTH_LONG
-            ).show()
-            finish()
-            return
-        }
+        imageAnalyzer.setAnalyzer(cameraExecutor) { imageProxy ->
 
-        modoFace = intent.getStringExtra("MODO_FACE") ?: "VALIDACAO"
+            if (validacaoRealizada) {
+                imageProxy.close()
+                return@setAnalyzer
+            }
 
-        previewView = findViewById(R.id.previewView)
+            val mediaImage = imageProxy.image
+            if (mediaImage != null) {
 
-        findViewById<TextView>(R.id.txtInstrucao).text =
-            if (modoFace == "CADASTRO")
-                "Centralize o rosto e pisque lentamente"
-            else
-                "Confirme identidade piscando"
+                val image = InputImage.fromMediaImage(
+                    mediaImage,
+                    imageProxy.imageInfo.rotationDegrees
+                )
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
+                val options = FaceDetectorOptions.Builder()
+                    .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+                    .enableTracking()
+                    .build()
 
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            iniciarCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.CAMERA),
-                100
-            )
-        }
-    }
+                val detector = FaceDetection.getClient(options)
 
-    private fun iniciarCamera() {
+                detector.process(image)
+                    .addOnSuccessListener { faces ->
 
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+                        if (faces.isNotEmpty()) {
 
-        cameraProviderFuture.addListener({
+                            val face = faces[0]
 
-            val cameraProvider = cameraProviderFuture.get()
+                            // 👁️ Liveness simplificado:
+                            val olhoEsquerdo = face.leftEyeOpenProbability
+                            val olhoDireito = face.rightEyeOpenProbability
 
-            val preview = Preview.Builder().build()
-            preview.setSurfaceProvider(previewView.surfaceProvider)
+                            if (olhoEsquerdo != null &&
+                                olhoDireito != null &&
+                                (olhoEsquerdo < 0.5f || olhoDireito < 0.5f)
+                            ) {
 
-            val imageAnalyzer = ImageAnalysis.Builder()
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
+                                validacaoRealizada = true
 
-            imageAnalyzer.setAnalyzer(cameraExecutor) { imageProxy ->
-
-                if (validacaoRealizada) {
-                    imageProxy.close()
-                    return@setAnalyzer
-                }
-
-                val mediaImage = imageProxy.image
-                if (mediaImage != null) {
-
-                    val image = InputImage.fromMediaImage(
-                        mediaImage,
-                        imageProxy.imageInfo.rotationDegrees
-                    )
-
-                    val options = FaceDetectorOptions.Builder()
-                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-                        .enableTracking()
-                        .enableClassification() // 👁️ permite detectar olhos
-                        .build()
-
-                    val detector = FaceDetection.getClient(options)
-
-                    detector.process(image)
-                        .addOnSuccessListener { faces ->
-
-                            if (faces.isNotEmpty()) {
-
-                                val face = faces[0]
-
-                                val olhoEsquerdo =
-                                    face.leftEyeOpenProbability ?: 1f
-
-                                val olhoDireito =
-                                    face.rightEyeOpenProbability ?: 1f
-
-                                // 👁️ Liveness: exige olho parcialmente fechado
-                                if (olhoEsquerdo < 0.5f ||
-                                    olhoDireito < 0.5f
-                                ) {
-
-                                    validacaoRealizada = true
-
-                                    runOnUiThread {
-                                        sucessoFacial()
-                                    }
+                                runOnUiThread {
+                                    sucessoFacial()
                                 }
                             }
                         }
-                        .addOnCompleteListener {
-                            imageProxy.close()
-                        }
-                } else {
-                    imageProxy.close()
-                }
+                    }
+                    .addOnCompleteListener {
+                        imageProxy.close()
+                    }
+            } else {
+                imageProxy.close()
             }
+        }
 
-            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+        val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
-                this,
-                cameraSelector,
-                preview,
-                imageAnalyzer
-            )
+        cameraProvider.unbindAll()
+        cameraProvider.bindToLifecycle(
+            this,
+            cameraSelector,
+            preview,
+            imageAnalyzer
+        )
 
-        }, ContextCompat.getMainExecutor(this))
-    }
-
-    private fun sucessoFacial() {
-
-        val result = Intent()
-        result.putExtra("FACE_OK", true)
-        result.putExtra("MODO_FACE", modoFace)
-
-        setResult(Activity.RESULT_OK, result)
-        finish()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
-    }
-}
+    }, ContextCompat.getMainExecutor(this))
+}l
