@@ -7,13 +7,12 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 
 object FaceUtils {
 
-    fun rostoDetectado(
+    fun detectarRosto(
         bitmap: Bitmap,
         callback: (Boolean) -> Unit
     ) {
         val options = FaceDetectorOptions.Builder()
-            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-            .enableTracking()
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
             .build()
 
         val detector = FaceDetection.getClient(options)
