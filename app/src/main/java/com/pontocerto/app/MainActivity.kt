@@ -142,7 +142,6 @@ class MainActivity : AppCompatActivity() {
             REQUEST_FACE -> {
 
                 val sucesso = data?.getBooleanExtra("FACE_OK", false) ?: false
-                val modo = data?.getStringExtra("MODO_FACE") ?: ""
 
                 if (!sucesso) {
                     Toast.makeText(
@@ -153,34 +152,27 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
 
-                if (modo == "VALIDACAO") {
-                    try {
+                try {
 
-                        val registro = PontoUtils.registrarPonto(this)
+                    // 🔥 Agora registra ponto mesmo sendo primeiro cadastro
+                    val registro = PontoUtils.registrarPonto(this)
 
-                        StorageUtils.salvarPonto(
-                            this,
-                            "$registro - PONTO REGISTRADO"
-                        )
+                    StorageUtils.salvarPonto(
+                        this,
+                        "$registro - PONTO REGISTRADO"
+                    )
 
-                        Toast.makeText(
-                            this,
-                            "Ponto registrado com sucesso!",
-                            Toast.LENGTH_LONG
-                        ).show()
-
-                    } catch (e: IllegalStateException) {
-
-                        Toast.makeText(
-                            this,
-                            e.message ?: "Erro ao registrar ponto.",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                } else {
                     Toast.makeText(
                         this,
-                        "Cadastro facial concluído. Toque novamente para bater o ponto.",
+                        "Ponto registrado com sucesso!",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                } catch (e: IllegalStateException) {
+
+                    Toast.makeText(
+                        this,
+                        e.message ?: "Erro ao registrar ponto.",
                         Toast.LENGTH_LONG
                     ).show()
                 }
